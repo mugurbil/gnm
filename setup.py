@@ -47,13 +47,12 @@ setup(
     include_package_data=True,
 	install_requires=["numpy"],
     classifiers=[
-        "Development Status :: 0 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7",
-        "Topic :: MCMC Sampling"
+        "Programming Language :: Python :: 2.7"
     ],
     cmdclass={'clean': CleanCommand,}
     )

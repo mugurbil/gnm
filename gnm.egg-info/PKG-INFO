@@ -1,0 +1,51 @@
+Metadata-Version: 1.1
+Name: gnm
+Version: 0.0.1
+Summary: Rock n Rolling awesome affine-invariant MCMC Sampler
+Home-page: http://github.com/mugurbil/gnm
+Author: Mehmet Ugurbil
+Author-email: mu388@nyu.edu
+License: MIT
+Description: gnm
+        ===
+        
+        **The Python sampling toolkit for affine-invariant MCMC**
+        
+        gnm is a stable, well tested Python implementation of the affine-invariant 
+        sampler for Markov chain Monte Carlo (MCMC).
+        
+        The code is open source.
+        
+        Documentation
+        -------------
+        
+        Read the guide at Documentation.
+        
+        Attribution
+        -----------
+        
+        
+        
+        License
+        -------
+        
+        Copyright 2015-? Mehmet Ugurbil and contributors.
+        
+        gnm is free software made available under the MIT License. For details see
+        the LICENSE file.
+        
+        
+        Change Log
+        ---------
+        
+        1.0.0 (2015-10-21)
+        ++++++++++++++++++
+        
+        - Initial release.
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.7

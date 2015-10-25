@@ -37,11 +37,11 @@ sigma = 1. # data standart deviation - float
 gnm_sampler = gnm.sampler(m, H, y, sigma, f_1)
 
 # sample 
-n_samples = 1.1 * 10 ** 5 
+n_samples = 1.1 * 10 ** 4
 gnm_sampler.sample(n_samples)
 
 # burn the initial 
-n_burn = 10 ** 4
+n_burn = 10 ** 3
 gnm_sampler.burn(n_burn)
 
 # print results
