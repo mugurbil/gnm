@@ -7,23 +7,31 @@ gnm is a stable, well tested Python implementation of the affine-invariant sampl
 
 The code is open source.
 
+Requirements
+------------
+
+To use the gnm package, the package numpy needs to be installed. For the examples and plotting the results, matplotlib is required. The acor feature demands the installation of the acor package.
+
+From the default packages, one will need os, setuptools (or distutils), re, sys, and copy. These packages likely come with any python installation.
+
 Installation
 ------------
 
-To use the gnm package you need to have the package numpy installed. To
-use the examples and plot the results, you will need matplotlib. To use the
-acor feature, you will need acor.
-From the default packages, you will need os, setuptools (or distutils), re,
-sys, and copy. These packages likely come with your python installation.
 The easiest way to install gnm would be to use pip.
-$ pip install gnm
-If you want to download manually, you can nd the package from the website
-http://cims.nyu.edu/~mu388/gnm. Then you can install manually by going
-into the gnm directory, and then runing setup.py.
-$ python setup.py install
-To clean the repository after installation, one can run clean with setup.py.
-$ python setup.py clean
 
+$ pip install gnm
+
+To download manually, use git clone or download as zip (see right hand side). 
+
+$ git clone https://github.com/mugurbil/gnm.git
+
+Then you can install manually by going into the gnm directory, and then runing setup.py.
+
+$ python setup.py install
+
+To clean the repository after installation, one can run clean with setup.py.
+
+$ python setup.py clean
 
 Documentation
 -------------
