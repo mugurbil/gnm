@@ -1,7 +1,6 @@
 README.rst
 setup.py
 gnm/__init__.py
-gnm/func.py
 gnm/gnm.py
 gnm/utils.py
 gnm.egg-info/PKG-INFO

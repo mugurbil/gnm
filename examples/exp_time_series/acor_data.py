@@ -44,16 +44,16 @@ N = options.N
 np.random.seed(options.seed)
 
 # make function instance
-from acor_func import funky
+from model import funky
 args = np.array(range(options.t_num))*options.t_max/float(options.t_num)
-f    = gnm.F(funky,args)
+f    = gnm.function(funky,args)
 
 # test the jacobian
 if options.Jtest:
 	print 'Testing Jacobian...'
 	x_max            = [2. for i in xrange(2*N) ]
 	x_min            = [0. for i in xrange(2*N) ]
-	converged, error = f.Jtest(x_min,x_max)
+	error            = f.Jtest(x_min,x_max)
 	if converged == 1 :
 		print 'Converged!' 
 	else : 

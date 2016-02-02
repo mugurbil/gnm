@@ -3,6 +3,5 @@
 
 __version__ = "0.0.1"
 
-from .func import *
 from .gnm import *
 from .utils import *
