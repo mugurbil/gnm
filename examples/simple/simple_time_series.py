@@ -21,14 +21,13 @@ seed         = 3
 t_max        = 10
 x_max        = [6.,5.,5.,5.]
 x_min        = [-1.,-2.0,-0.,-1.]
-m            = [4.,2.,0.5,1.]
+m            = [12.,8.,0.5,1.]
 H            = np.identity(4)*0.5
 sigma        = 0.1
-n_samples    = 10000 
-n_burn       = 400
-angle        = 0.*np.pi/2
-n_grid_pts   = 100
-n_bins       = 100
+n_burn       = 10000
+n_samples    = 1000000 + n_burn
+n_grid       = 100
+n_bins       = 400
 
 np.random.seed(seed)
 
@@ -59,17 +58,18 @@ for i in xrange(y.size):
 args = {'t':t, 'y':y, 's':sigma}
 
 
-jagger = gnm.sampler(m,model,args,m=m,H=H)
-#jagger.dynamic(1)
-jagger.static(1,0.1)
+jagger = gnm.sampler(m, model, args)
+jagger.prior(m, H)
+jagger.dynamic(1)
+# jagger.static(1, 0.1)
 
-print("Testing Jacobian...")
-error = jagger.Jtest(x_min,x_max)
-if error:
-    print("error :" + str(error))
-else: 
-    print("Converged!")
-print
+# print("Testing Jacobian...")
+# error = jagger.Jtest(x_min,x_max)
+# if error:
+#     print("error :" + str(error))
+# else: 
+#     print("Converged!")
+# print
 
 
 # sample the likelihood
@@ -78,8 +78,14 @@ start_time    = time.time()
 jagger.vsample(n_samples)
 jagger.burn(n_burn)
 end_time      = time.time()
-print("Acceptence Percentage: " + str(jagger.accept_rate))
-print("Ellapsed Time        : " + str(end_time-start_time))
+acor = la.norm(jagger.acor())
+T = end_time - start_time
+print("Acceptence Percentage    : {:.3}".format(jagger.accept_rate))
+print("Ellapsed Time            : %d h %d m %d s" % (T/3600,T/60%60,T%60))
+print("Auto-correlation time    : {:.2e}".format(acor))
+print("Sample size              : {:.2e}".format(n_samples-n_burn))
+print("Effective sample size    : {:.2e}".format((n_samples-n_burn)/acor))
+print("Number of function calls : {:.2e}".format(jagger.call_count))
 print 
 
 # histogram of samples
@@ -87,14 +93,6 @@ print 'Plotting Samples...'
 plt_smpld = plt.hist(jagger.chain[:,0],n_bins,color = 'b',
                      range=[x_min[0],x_max[0]],normed=True,
                      label='sampled',alpha=0.3)
-
-# # theoretical curve
-# print 'Plotting Theoretical Curve...'
-# x_space   = np.linspace(x_min[0],x_max[0],num=n_grid_pts+1)
-# curve1    = gnm.integrator(0, 1, jagger.posterior, x_min, x_max, n_grid_pts, 0)
-# plt_theo  = plt.plot(x_space, curve1, color = 'r', linewidth =1,
-#                      label='theoretical')
-# print 
 
 # error bars
 z, fhat, epsf = jagger.error_bars(n_bins,x_min,x_max)
@@ -114,14 +112,6 @@ print 'Plotting Samples...'
 plt_smpld = plt.hist(jagger.chain[:,1],n_bins,color ='b',
                      range=[x_min[1],x_max[1]],normed=True,
                      label='sampled',alpha=0.3)
-
-# # theoretical curve
-# print 'Plotting Theoretical Curve...'
-# x_space   = np.linspace(x_min[1], x_max[1], num=n_grid_pts+1)
-# curve2    = gnm.integrator(1, 0, jagger.posterior, x_min, x_max, n_grid_pts, np.pi/2)
-# plt_theo  = plt.plot(x_space, curve2, color = 'r', linewidth =1,
-#                      label='theoretical')
-# print 
 
 # error bars
 p3 = plt.plot(z[1],fhat[1], color = 'b', marker = 's', linewidth = 0, alpha=0.0)
@@ -154,16 +144,6 @@ plt.ylabel('Exponent ($\lambda$)')
 plt.savefig('time_series_4d2.pdf',dpi = 500)
 plt.clf()
 
-print la.norm(jagger.acor())
-print jagger.call_count
-
-# p3 = plt.hist(jagger.step_of_accept, [-1,0,1,2,3,4,5], normed=1)
-# plt.title('Step of Acceptence')
-# plt.xlabel('Step')
-# plt.ylabel('Percentage')
-# plt.savefig('step2.pdf',dpi = 500)
-# plt.clf()
-
 p4 = plt.plot(jagger.step_count/jagger.n_samples, 'ro')
 plt.title('Step of Acceptence')
 plt.xlabel('Step')
@@ -183,7 +163,7 @@ for i in xrange(n):
 A = A/float(n)
 
 win = 1000
-t_max = 10000
+t_max = 20000
 C = np.zeros((t_max,N))
 
 for t in xrange(t_max):

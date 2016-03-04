@@ -35,7 +35,7 @@ version = vre.findall(m)[0]
 
 setup(
 	name='gnm',
-	version='0.0.1',
+	version='0.4.0',
 	description='Rock n Rolling awesome affine-invariant MCMC Sampler',
 	long_description=readme(),
 	url='http://github.com/mugurbil/gnm',

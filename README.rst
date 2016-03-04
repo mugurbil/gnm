@@ -46,7 +46,7 @@ Goodman
 License
 -------
 
-Copyright 2015-? Mehmet Ugurbil and contributors.
+Copyright 2016-? Mehmet Ugurbil and contributors.
 
 gnm is free software made available under the MIT License. For details see
 the LICENSE file.

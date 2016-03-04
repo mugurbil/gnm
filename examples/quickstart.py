@@ -12,23 +12,23 @@ import time
 import matplotlib.pyplot as plt
 
 # random seeding
-np.random.seed(1)
+np.random.seed(3)
 
 # initial guess
-x_0 = [0.]
+x_0 = [0.1]
 # user function 
 def model(x, args):
     y = args['y']
     s = args['s']
     return 1, [(x[0]**2-y)/s], [[(2.*x[0])/s]]
-# observed data and error
-# arguments for the user function
+# observed data and error = arguments for the user function
 data = {'y':[1.], 's':1.}    
 # sampler object
+jagger = gnm.sampler(x_0, model, data)
 # user-defined prior mean and precision 
 m = [0.]   # vector
 H = [[1.]] # matrix
-jagger = gnm.sampler(x_0, model, data, m=m, H=H)
+jagger.prior(m, H)
 
 # domain for Jtest
 d_min = [-3.]
@@ -38,16 +38,17 @@ error = jagger.Jtest(d_min, d_max)
 assert error == 0 
 
 # back-off info
-max_steps = 2
-dilation = 0.5
+max_steps = 1
+dilation = 0.1
 jagger.static(max_steps, dilation)
 
 # start sampling
 print("\nSampling...")
 n_samples = 1.1*10**4
 jagger.sample(n_samples)
+jagger.save()
 
-# burn the initial 
+# burn the initial samples
 n_burn = 10**3
 jagger.burn(n_burn)
 
@@ -75,9 +76,8 @@ for i in xrange(n_grid) :
     curve[i] = jagger.posterior(x[0][i])
     cnorm += curve[i]
 #   # normalize curve
-curve = curve/cnorm/6.*n_grid
+curve = curve/cnorm*n_grid/(D_max[0]-D_min[0])
 plt.plot(x[0], curve, color = 'k', linewidth = 2, label="Theoretical")
-
 
 # plot options
 plt.legend(loc ="lower center") 

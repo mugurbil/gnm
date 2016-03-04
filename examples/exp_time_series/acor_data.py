@@ -10,8 +10,7 @@ import os
 import gnm
 
 '''
-Calculating the auto-corrolation time which is an ill-posed problem.
-Generating the theoretical (quadrature) curve for the auto-corrolation.
+Generating data for the problem.
 '''
 print
 print 'Auto-corrolation time: data'
@@ -43,23 +42,24 @@ N = options.N
 # seed the random number generator
 np.random.seed(options.seed)
 
-# make function instance
+# # make function instance
 from model import funky
-args = np.array(range(options.t_num))*options.t_max/float(options.t_num)
-f    = gnm.function(funky,args)
+f = funky
+# args = np.array(range(options.t_num))*options.t_max/float(options.t_num)
+# f    = gnm.function(funky,args)
 
-# test the jacobian
-if options.Jtest:
-	print 'Testing Jacobian...'
-	x_max            = [2. for i in xrange(2*N) ]
-	x_min            = [0. for i in xrange(2*N) ]
-	error            = f.Jtest(x_min,x_max)
-	if converged == 1 :
-		print 'Converged!' 
-	else : 
-		print 'Did not converge, check jacobian :('
-	print 'error : {:.3e}'.format(error)
-	print
+# # test the jacobian
+# if options.Jtest:
+# 	print 'Testing Jacobian...'
+# 	x_max            = [2. for i in xrange(2*N) ]
+# 	x_min            = [0. for i in xrange(2*N) ]
+# 	error            = f.Jtest(x_min,x_max)
+# 	if converged == 1 :
+# 		print 'Converged!' 
+# 	else : 
+# 		print 'Did not converge, check jacobian :('
+# 	print 'error : {:.3e}'.format(error)
+# 	print
 
 print 'Creating data...' 
 sigma   = 0.1

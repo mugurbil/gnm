@@ -49,7 +49,7 @@ parser.add_option('--fancy', dest='fancy', action='store_true',
 #                 default=True, help='toggle off progressbar')
 # sampling info
 parser.add_option('-n', dest='n_samples', type='int',
-                default=1.1*10**4, help='number of samples')
+                default=1*10**6, help='number of samples')
 parser.add_option('-b', dest='n_burn', type='int',
                 default=10**3, help='number of samples to burn')
 # plotting info
@@ -65,18 +65,18 @@ def model(x, args):
     y = args['y']
     s = args['s']
     return 1, [(x[0]**2-y)/s], [[(2.*x[0])/s]]
-
 # initial guess
 x_0 = [opts.x_0]
-
-# user-defined prior mean and precision 
-m = [opts.m]   # vector
-H = [[opts.H]] # matrix
-
 # observed data and error
 data = {'y':[opts.y], 's':opts.s}
 
-jagger = gnm.sampler(x_0, model, data, m=m, H=H)
+# creating sampler object
+jagger = gnm.sampler(x_0, model, data)
+
+# setting prior mean and precision 
+m = [opts.m]   # vector
+H = [[opts.H]] # matrix
+jagger.prior(m, H)
 
 # sampler object
 if opts.fancy:
@@ -90,13 +90,12 @@ jagger.burn(opts.n_burn)
 
 end_time = time.time()
 T = end_time - start_time # sample time
-print("Ellapsed Time   : %d h %d m %d s" % (T/3600,T/60%60,T%60))
-print("Acceptence Rate : {:.3f}".format(jagger.accept_rate))
-print("Number Sampled  : {:.1e}".format(opts.n_samples))
-print("Number Burned   : {:.1e}".format(opts.n_burn))
-print("Number Used     : {:.1e}\n".format(opts.n_samples - opts.n_burn))
-# print("Auto-cor Time   : {:.3f}".format(jagger.acor()))
-# print acor.acor(jagger.chain,5)[0]
+print("Ellapsed time            : %d h %d m %d s" % (T/3600,T/60%60,T%60))
+print("Acceptence rate          : {:.3f}".format(jagger.accept_rate))
+print("Auto-correlation time    : {:.2e}".format(jagger.acor()[0]))
+print("Sample size              : {:.2e}".format(opts.n_samples - opts.n_burn))
+print("Effective sample size    : {:.2e}".format((opts.n_samples - opts.n_burn)/jagger.acor()[0]))
+print("Number of function calls : {:.2e}".format(jagger.call_count))
 
 x, p_x, err = jagger.error_bars(opts.n_grid, [opts.d_min],[opts.d_max])
 
@@ -107,7 +106,7 @@ for i in xrange(opts.n_grid) :
     curve[i] = jagger.posterior(x[0][i])
     cnorm += curve[i]
 
-curve = curve/cnorm/6.*opts.n_grid
+curve = curve/cnorm*opts.n_grid/(opts.d_max-opts.d_min)
 
 if opts.max == 0 :
     sz = "no back-off"
@@ -128,4 +127,3 @@ plt.legend(loc ='upper center')
 plt.savefig('test%d.pdf' % opts.max, dpi = 500)   
 plt.show() 
 
-print jagger.acor()   

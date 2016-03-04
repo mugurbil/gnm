@@ -130,9 +130,9 @@ plot_theoretical = plt.plot(x_space, quadrature_curve, color = 'r',
 
 # error bars
 z, fhat, epsf = sampler.error_bars(num_bins, plot_range[0], plot_range[1])
-z = np.dot(z.T, matrix).T
-fhat = np.dot(fhat.T, matrix).T
-epsf = np.dot(epsf.T, matrix).T
+z = np.dot(z.T, matrix).T       # rotate
+fhat = np.dot(fhat.T, matrix).T # rotate
+epsf = np.dot(epsf.T, matrix).T # rotate
 p3 = plt.plot(z[0], fhat[0] , color = 'b', marker = 's', linewidth = 0, 
                 alpha=0.0)
 plt.errorbar(z[0], fhat[0] , yerr = epsf[0], fmt = 'k.')

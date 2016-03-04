@@ -14,13 +14,14 @@ import numpy as np
 la = np.linalg
 
 import copy # for sample
-import sys # for vsample
+import sys # for sample visual
+import json # for save/load
 
 from .utils import *
 
 class sampler:
 
-    def __init__(self, x, model, args, m=0, H=0):
+    def __init__(self, x, model, args):
     	""" 
     Init
         Initialize the GNM sampler class
@@ -29,42 +30,32 @@ class sampler:
             initial guess
         model :
             user defined data model function
-        m : 
-            mean of the prior
-        H : 
-            precision matrix of the prior
-    Hiddens :
-        ln_H_ : log(det(H))/2
-            calculate this once to use everytime log prior is called
-        Hm    : < H, m >
-            calculate this once to use everytime proposal is called
         """
         self._args = args
         self._f = function(model, args)
 
         x = np.reshape(np.array(x), (-1,1)) 
-        self._n = np.size(x)
+        self._n = np.size(x) # size of input space
         chi_x, f_x, J_x = self._f(x)     
         try:
             assert chi_x == True
         except AssertionError:
             print("Error: Initial guess out of range.")
-            return 0
+        self._X = {'x':x,'f':f_x,'J':J_x} # state of x
 
-    	self.prior(m, H)
-    	# self.prior(0*x, (0*x)*x.T)
+        # prior parameters
+        self._prior = False
 
-        self._max_steps = 5
-        self._step_size = 0.5
-        self._fancy = False
+        # back-off parameters
+        self._max_steps = 1
+        self._step_size = 0.1
+        self._dynamic = False
         self._opts = {}
 
         # sampler outputs
         self._chain = None
         self._n_samples = 0
         self._n_accepted = 0
-
-        self._state_x = self._proposal_params({'x':x,'f':f_x,'J':J_x }) 
 
     def prior(self, m, H):
         """
@@ -81,17 +72,26 @@ class sampler:
         Hm    : < H, m >
             calculate this once to use everytime proposal is called
         """
-        self._m     = np.reshape(np.array(m), (-1,1))
+        if self._prior == True:
+            print("warning: Prior information is already set.")
+        else: 
+            self._prior = True
+
+        # mean
+        self._m = np.reshape(np.array(m), (-1,1))
         try : 
             assert np.size(self._m) == self._n
         except : 
             print("Error: Mean has to be an array of size n.")
+
+        # precision
         self._H     = np.array(H)
         try : 
             assert np.shape(self._H) == (self._n, self._n)
         except : 
             print("Error: Precision has to be a matrix of shape n by n.")
-            exit()
+
+        # precalculations
         self._ln_H_ = np.log(la.det(self._H))/2.
         self._Hm    = np.dot(self._H,self._m)
 
@@ -114,41 +114,36 @@ class sampler:
         step_size : 
             the step size of the back-off
         """
-        self._fancy = False
+        self._dynamic = False
         # begin checks      
         try : 
-            assert max_steps == int(max_steps)
-        except AssertionError :
-            print("Warning: max_steps is not an int. Converted.")
-            max_steps = int(max_steps)
+            self._max_steps = int(max_steps)
         except :
-            print("Error: max_steps has to be an int.")
+            print("Error: Input 1 (max_steps) has to be an int.")
             return 0
-
         try : 
-            assert max_steps >= 0
+            assert self._max_steps >= 0
         except : 
-            print("Warning: max_steps has to be non-negative.")
+            print("Warning: Input 1 (max_steps) has to be non-negative.")
             print("Setting max_steps to 0.")
-            max_steps = 0
-        self._max_steps = max_steps
+            self._max_steps = 0
 
         if max_steps > 0 :
             try : 
                 assert step_size == float(step_size)
             except AssertionError :
-                print("Warning: step_size is not a float. Converted.")
+                print("Warning: Input 2 (step_size) is not a float. Converted.")
                 step_size = float(step_size)
             except :
-                print("Error: step_size has to be a float.")
+                print("Error: Input 2 (step_size) has to be a float.")
                 return 0
 
             try : 
                 assert 0. < step_size < 1.
             except : 
-                print("Warning: step_size has to be between 0 and 1.")
-                print("Setting step_size to 0.5.")
-                step_size = 0.5
+                print("Warning: Input 2 (step_size) has to be between 0 and 1.")
+                print("Setting step_size to 0.2.")
+                step_size = 0.2
             self._step_size = step_size
             if step_size**max_steps < 10**(-15):
                 print("Warning: Back-off gets dangerously small.")
@@ -160,159 +155,103 @@ class sampler:
         Set the sampler parameters for dynamic back off
     Inputs :
         max_steps :
-            maximum optimization steps to be taken
+            maximum back-off steps to be taken
     Optional Inputs: 
-        opts       : ({})
+        opts : ({})
         dictionary containing fancy options
         """
-        self._fancy = True
-        self._opts = opts
-        self._max_steps = max_steps
+        self._dynamic = True
 
-    def sample(self, n_samples):
+        # begin checks      
+        try : 
+            self._max_steps = int(max_steps)
+        except :
+            print("Error: Input 1 (max_steps) has to be an int.")
+            return 0
+        try : 
+            assert self._max_steps >= 0
+        except : 
+            print("Warning: Input 1 (max_steps) has to be non-negative.")
+            print("Setting max_steps to 0.")
+            self._max_steps = 0
+
+        self._opts = opts
+        # end checks
+
+    def sample(self, n_samples, divs=1, visual=False, safe=False):
         """
     Sample
-        Generate samples for posterior distribution using Gauss-Newton 
-        proposal parameters
-    Inputs : 
-        n_samples :
-            number of samples to generate
-    Hidden Outputs :
-        chain  :
-            chain of samples
-        n_samples :
-            length of chain
-        n_accepted :
-            number of proposals accepted
-        step_count :
-            count of the steps accepted
-        """
-        try : 
-            n_samples = int(n_samples)
-        except :
-            print("Error: Number of samples has to be an int.")
-            exit()
-
-        # fetch info
-        state_x = self._state_x
-        x = state_x['x']
-        max_steps = self._max_steps
-        q = self._step_size
-        opts = self._opts
-
-        # initialize lists 
-        chain = np.zeros((n_samples, self._m.size)) 
-        n_accepted = 0
-        step_count = np.zeros(max_steps+2)
-
-        # begin outer loop
-        for i in xrange(n_samples):
-            accepted = False           # check if sample is accepted
-            r        = 1.              # initial step size
-            r_list   = []              # list of step sizes
-            z_list   = [state_x]       # list of steps 
-            D_x_z    = state_x['post'] # denominator of acceptance prob
-
-            steps = 0 # back off steps taken so far
-            while steps <= max_steps:
-
-                # get proposal
-                f_defined_z = False
-                while f_defined_z == False :
-                    mu_x, L_x = update_params(state_x, r)
-                    z         = multi_normal(mu_x, L_x)
-                    f_defined_z, f_z, J_z = self._f(z)
-                    if not f_defined_z: 
-                        r = r * q
-                        steps += 1
-                r_list.append(r)
-
-                state_z = self._proposal_params({'x':z,'f':f_z,'J':J_z })
-                z_list.append(state_z)
-                mu_z, L_z = update_params(state_z, r)
-
-                D_x_z  = D_x_z + log_expo(z, mu_x, L_x)
-                # step 2 is to compute N_z_x where it is more difficult 
-                # since we cannot make use of previous N_z_x
-                N_z_x  = state_z['post'] + log_expo(x, mu_z, L_z)
-                N_is_0 = False # check to see if N_z_x = 0
-                for j in xrange(1, steps+1):
-                    r_j       = r_list[j]
-                    mu_z, L_z = update_params(state_z, r_j)
-                    z_j, f_j  = get_vals(z_list[j])
-                    mu_j, L_j = update_params(z_list[j], r_j)
-
-                    P_z_j = log_expo(z_j, mu_z, L_z)
-                    D_z_j = state_z['post']   + P_z_j
-                    N_j_z = z_list[j]['post'] + log_expo(z, mu_j, L_j)
-
-                    if N_j_z > D_z_j :
-                        A_z_j = 1. 
-                        N_is_0 = True
-                        break
-                    else:
-                        A_z_j = min(1., np.exp(N_j_z - D_z_j))
-                    N_z_x  = N_z_x + P_z_j + np.log(1. - A_z_j)
-                # end of j for loop
-                if N_is_0 == True :
-                    A_x_z = 0.
-                elif N_z_x > D_x_z :
-                    A_x_z = 1.
-                else :
-                    A_x_z = min(1., np.exp(N_z_x - D_x_z))
-
-                if  np.random.rand() <= A_x_z:
-                    accepted = True
-                    break
-                else : 
-                    D_x_z  = D_x_z + np.log(1. - A_x_z)
-                    r      = self._back_off(z_list, r_list)
-                    steps += 1                     
-            # end of steps for loop
-            if accepted == True :
-                n_accepted += 1    
-                chain[i,:] = z[:,0] 
-                state_x = copy.deepcopy(state_z)
-                x,f_x   = get_vals(state_x)
-                # for statistics
-                step_count[steps+1] += 1
-            else :
-                chain[i,:]  = x[:,0] 
-                step_count[0] += 1
-        # end outer loop
-
-        # update stored info
-        self._state_x = state_x
-
-        # outputs
-        if self._n_samples == 0 :
-            self._chain = chain
-            self._step_count = step_count
-        else :
-            self._chain = np.append(self._chain, chain, axis=0)
-            self._step_count = np.add(self._step_count, step_count)
-
-        self._n_samples += n_samples
-        self._n_accepted += n_accepted
-    # end sampler
-
-    def vsample(self, n_samples, divs=100):
-        """
-    Vsample
-        Provides simple sampling info while sampling
+        Sampling 
     Inputs  : 
         n_samples :
             number of samples to generate
     Optional Inputs : 
-        divs : (100)
+        divs : (1)
             number of divisions
+        visual : 
+            show progress 
+        safe : 
+            save the chain at every division
         """
-        print("Sampling: 0%")
+        if visual: 
+            print("Sampling: 0%")
         for i in xrange(divs):
-            self.sample(int(n_samples/divs))
-            sys.stdout.write("\033[F") # curser up
-            print("Sampling: "+str(int(i*100./divs)+1)+'%')
-        self.sample(n_samples % divs)
+            self._sample(int(n_samples/divs))
+            if visual: 
+                sys.stdout.write("\033[F") # curser up
+                print("Sampling: "+str(int(i*100./divs)+1)+'%')
+            if safe: 
+                self.save(path="chain_{:}.dat".format(i))
+        if n_samples % divs != 0:
+            self._sample(n_samples % divs)
+            if safe: 
+                self.save(path="chain_{:}.dat".format(divs))
+
+    def save(self, path="chain.dat"):
+        """
+    Save
+        Save data to file
+    Inputs  : 
+        path :
+            specifies the path name of the file to be loaded to
+        """
+        # create dictionary for data
+        dic = {}
+        dic['chain'] = self._chain.tolist()
+        dic['step_count'] = self._step_count.tolist()
+        dic['n_samples'] = self._n_samples
+        dic['n_accepted'] = self._n_accepted
+        dic['x'] = self._X['x'].tolist()
+        dic['f'] = self._X['f'].tolist()
+        dic['J'] = self._X['J'].tolist()
+
+        # write data to file
+        file = open(path, 'w')
+        json.dump(dic, file)
+        file.close()
+
+    def load(self, path="chain.dat"):
+        """
+    Load
+        Load data from file
+    Inputs  : 
+        path :
+            specifies the path name of the file to be loaded from
+        """
+        # read data from file
+        file = open(path, 'r')
+        dic = json.load(file)
+        file.close()
+
+        # get data from dictionary
+        self._chain = np.array(dic['chain'])
+        self._step_count = np.array(dic['step_count'])
+        self._n_samples = dic['n_samples']
+        self._n_accepted = dic['n_accepted']
+        self._X = {}
+        self._X['x'] = dic['x']
+        self._X['f'] = dic['f']
+        self._X['J'] = dic['J']
         
     def burn(self, n_burned):
         """
@@ -361,19 +300,19 @@ class sampler:
         x : 
             input value 
     Outputs : 
-        p_x_y : p(x|y)=p(x)*exp{-||f(x)-y||^2/(2s^2)}
-            posterior probability of x given y
+        p : p(x)=pi(x)*exp{-||f(x)||^2/(2)}
+            posterior probability of x
         """
-        m = self._m
-        H = self._H
-
         x = np.reshape(np.array(x), (-1,1))
 
-        f_defined, f_x, J_x = self._f(x)
-        if f_defined :
-            p_x   = np.exp(-np.dot((x-m).T,np.dot(H,x-m))/2.)
-            p_x_y = p_x*np.exp(-la.norm(f_x)**2/2.)
-            return p_x_y
+        chi_x, f_x, J_x = self._f(x)
+        if chi_x :
+            p = np.exp(-la.norm(f_x)**2/2.)
+            if self._prior:
+                m = self._m
+                H = self._H
+                p = p * np.exp(-np.dot((x-m).T,np.dot(H,x-m))/2.)
+            return p
         else :
             return 0
     
@@ -395,8 +334,8 @@ class sampler:
             estimated error for p_x
         """
         # fetch data
-        chain    = self._chain
-        length   = len(chain)
+        chain = self._chain
+        length = len(chain)
         try:
             n_dims = np.shape(chain)[1]
         except:
@@ -421,7 +360,6 @@ class sampler:
             print("Domain maximum has wrong size.")
             return 0
         # end checks
-
 
         # initialize outputs
         p_x   = np.zeros((n_dims, n_bins))    # esitmate of posterior
@@ -448,6 +386,236 @@ class sampler:
             # end find
         # end outer loop
         return x, p_x, error
+    # end error_bars
+    
+    # internal methods
+    def _sample(self, n_samples):
+        """
+    Sample
+        Generate samples for posterior distribution using Gauss-Newton 
+        proposal parameters
+    Inputs : 
+        n_samples :
+            number of samples to generate
+    Hidden Outputs :
+        chain  :
+            chain of samples
+        n_samples :
+            length of chain
+        n_accepted :
+            number of proposals accepted
+        step_count :
+            count of the steps accepted
+        """
+        try : 
+            n_samples = int(n_samples)
+        except :
+            print("Error: Number of samples has to be an int.")
+            exit()
+
+        # fetch info
+        X = self._proposal_params(self._X)
+        k_max = self._max_steps
+
+        # initialize 
+        chain = np.zeros((n_samples, self._n)) 
+        n_accepted = 0
+        step_count = np.zeros(k_max+2)
+
+        # begin outer loop
+        for i in xrange(n_samples):
+            accepted  = False       # check if sample is accepted
+            r_        = [1]         # list of step sizes
+            Z_        = [X]         # initialize list of Z s
+            self._r_  = r_ 
+            log_P_z_x = 0. + X['log_p'] 
+
+            k = 0 # back-off steps taken so far
+            while k <= k_max:
+                # get proposal
+                chi_z = False
+                while not chi_z:
+                    z = multi_normal(X, r_[-1])
+                    chi_z, f_z, J_z = self._f(z)
+                Z = self._proposal_params({'x':z,'f':f_z,'J':J_z})
+                Z_.append(Z)
+                self._Z_ = Z_
+
+                log_P_z_x += log_K(Z, X, r_[-1])
+
+                # N is the Numerator of the acceptance, N = P_x_z
+                self._N_is_0 = False # check to see if N = 0, to use in _log_P
+                log_N = self._log_P(X, Z, k)
+
+                # calculating acceptance probability
+                if self._N_is_0 == True :
+                    A_z_x = 0.
+                elif log_N >= log_P_z_x :
+                    A_z_x = 1.
+                else :
+                    A_z_x = np.exp(log_N - log_P_z_x)
+
+                # acceptance rejection
+                if  np.random.rand() <= A_z_x:
+                    accepted = True
+                    break
+                else : 
+                    log_P_z_x += np.log(1. - A_z_x)
+                    self._back_off()
+                    k += 1                     
+            # end of steps for loop
+            if accepted == True :
+                chain[i,:] = z[:,0] 
+                X = Z
+                # for statistics
+                n_accepted += 1    
+                step_count[k+1] += 1
+            else :
+                chain[i,:]  = X['x'][:,0]
+                # for statistics
+                step_count[0] += 1
+        # end outer loop
+
+        # update stored info
+        self._X = X
+
+        # outputs
+        if self._n_samples == 0 :
+            self._chain = chain
+            self._step_count = step_count
+        else :
+            self._chain = np.append(self._chain, chain, axis=0)
+            self._step_count = np.add(self._step_count, step_count)
+        self._n_samples += n_samples
+        self._n_accepted += n_accepted
+    # end sample
+
+    def _proposal_params(self, state):
+        """
+    Proposal parameters
+        Calculate parameters needed for the proposal. 
+    Inputs  :
+        state : 
+            x  :   
+                the present sample, the place to linearize around
+            f  : f(x), 
+                function value at x
+            J  : f'(x), 
+                the jacobian of the function evaluated at x
+    Outputs :
+        state :
+            mu   : 
+                the mean vector
+            L    :
+                the lower triangular cholesky factor of P 
+            log_p : log(p(x))
+                log of the posterior density
+        """
+        x  = state['x']
+        f  = state['f']
+        J  = state['J']
+        JJ = np.dot(J.T,J)     
+
+        if self._prior: 
+            m  = self._m
+            H  = self._H
+            Hm = self._Hm
+            # LL' = P = H+J'J 
+            L  = la.cholesky(H+JJ)   
+            # mu = (P^-1)(Hm-J'f+J'Jx)
+            mu = la.solve(L.T,la.solve(L,Hm-np.dot(J.T,f)+np.dot(JJ,x))) 
+        else: 
+            # P = J'J
+            L = la.cholesky(JJ)
+            # mu = x-(P^-1)J'f
+            mu = x-la.solve(L.T,la.solve(L,np.dot(J.T,f)))
+
+        state['L'] = L        
+        state['mu'] = mu
+        state['log_p'] = self._log_post(x,f)
+        return state
+
+    def _log_P(self, X , Z, k):
+        """
+    Log of the probability of transition from z to x with k steps
+        log ( P_k (x, z) )
+    Inputs : 
+        X :
+            state to be proposed to
+        Z : 
+            state to be proposed from
+        k : 
+            number of recursions, depth
+        """
+        r_ = self._r_
+        Z_ = self._Z_
+        # zero case
+        if k == 0 :
+            log_P = Z['log_p'] + log_K(X, Z, r_[k])
+        # recursice case
+        else :
+            P_zk_z = np.exp( self._log_P(Z_[k], Z, k-1) )
+            P_z_zk = np.exp( self._log_P(Z, Z_[k], k-1) ) 
+            # flag
+            if P_zk_z <= P_z_zk :
+                self._N_is_0 = True
+                log_P = -np.inf
+            else : 
+                log_P = np.log( P_zk_z - P_z_zk ) + log_K(X, Z, r_[k])
+        return log_P
+
+    def _back_off(self):
+        """
+    Back off
+        Calculate the back off step size
+    Inputs : 
+        Z_ :
+            list of states in current proposal
+        r_ : 
+            list of back offs in current proposal
+        q : 
+            step size reduction
+        dynamic : 
+            set to True if you want to use the dynamic back-off
+    Outputs : 
+        """
+        q = self._step_size
+        r = self._r_[-1]
+        Z_ = self._Z_
+        if self._dynamic:
+            p_0   = la.norm(Z_[0]['f'])
+            dp_0  = p_0*2*la.norm(Z_[0]['J'])
+            p_r   = la.norm(Z_[-1]['f'])
+            dp_r  = p_0*2*la.norm(Z_[-1]['J'])
+            r_new = optimize(r, p_0**2, dp_0, p_r**2, dp_r)
+        else :
+            r_new = r * q  
+        self._r_.append(r_new)  
+
+    def _log_post(self,x,f_x):
+        """
+    Log of the posterior density
+        This is used to calculete acceptance probability for sampling.
+    Inputs  :
+        x   : 
+            input value
+        f_x : f(x), 
+            function value at x
+    Outputs : 
+        log(p_x) : log[pi(x)]-||f(x)||^2/(2)
+            log of the posterior probability
+        """
+        # least squares part   -||f(x)||^2/2
+        log_likelihood = (-la.norm(f_x)**2)/(2.)
+
+        # prior part           -(x-m)'H(x-m)/2
+        if self._prior: 
+            m = self._m
+            H = self._H
+            log_prior = self._ln_H_-np.dot((x-m).T,np.dot(H,x-m))/2.
+            return log_prior+log_likelihood
+        else:
+            return log_likelihood
 
     """
     Properties:
@@ -492,95 +660,3 @@ class sampler:
     @property
     def step_size(self):
         return self._step_size
-    
-    
-    
-
-    # internal methods
-    
-    def _log_post(self,x,f_x):
-        """
-    Log of the posterior density
-        This is used to calculete acceptance probability for sampling.
-    Inputs  :
-        x   : 
-            input value
-        f_x : f(x), 
-            function value at x
-    Outputs : 
-        log(p_x_y) : p(x|y)=log[p(x)]-||f(x)-y||^2/(2s^2)
-            posterior probability of x given y
-        """
-        m = self._m
-        H = self._H
-
-        # prior part           -(x-m)'H(x-m)/2
-        part1 = -np.dot((x-m).T,np.dot(H,x-m))/2.
-        # least squares part   -||f(x)-y||^2/(2s^2)
-        part2 = -la.norm(f_x)**2/(2.)
-        return self._ln_H_+part1+part2
-
-    def _proposal_params(self, state):
-        """
-    Proposal parameters
-        Calculate parameters needed for the proposal. 
-    Inputs  :
-        state : 
-            x  :   
-                the present sample, the place to linearize around
-            f  : f(x), 
-                function value at x
-            J  : f'(x), 
-                the jacobian of the function evaluated at x
-    Outputs :
-        state :
-            mu   : 
-                the mean vector
-            L    :
-                the lower triangular cholesky factor of P 
-            post : log_post
-                log of the posterior density
-        """
-        m  = self._m
-        H  = self._H
-        Hm = self._Hm
-        x  = state['x']
-        f  = state['f']
-        J  = state['J']
-
-        b  = -np.dot(J,x)+(f)             # b = [f(x)-f'(x)x]
-        L  = la.cholesky(H+np.dot(J.T,J)) # P = H+A'A = LL'   
-        mu = la.solve(L.T,la.solve(L,Hm-np.dot(J.T,b)))
-        state['L']  = L                   # mu_x = P^-1(Hm-A'b)
-        state['mu'] = mu
-        # state['ln_L'] = np.log(det(L))
-        state['post'] = self._log_post(x,f)
-        return state
-
-    def _back_off(self, list_states, r_list):
-        """
-    Back off
-        Calculate the back off step size
-    Inputs : 
-        list_states :
-            list of states in current proposal
-        r_list : 
-            list of back offs in current proposal
-        step_size : 
-            step size reduction
-        fancy : 
-            set to True if you want to use the fancy back-off
-    Outputs : 
-        """
-        step_size = self._step_size
-        fancy = self._fancy
-        r = r_list[len(r_list)-1]
-        if fancy:
-            p_0   = la.norm(list_states[0]['f'])
-            dp_0  = p_0*2*la.norm(list_states[0]['J'])
-            p_r   = la.norm(list_states[len(list_states)-1]['f'])
-            dp_r  = p_0*2*la.norm(list_states[len(list_states)-1]['J'])
-            r_new = optimize(r,p_0**2,dp_0,p_r**2,dp_r)
-            return r_new
-        else :
-            return r*step_size    

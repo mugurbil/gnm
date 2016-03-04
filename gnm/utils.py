@@ -5,15 +5,11 @@
 Here we provide the functions that the gnm sampler needs
 '''
 
-__all__=['update_params','get_vals','log_expo','multi_normal',
+__all__=['update_params','log_K','multi_normal',
             'det','optimize','function']
 
 import numpy as np
 la = np.linalg
-try:
-    from scipy import integrate
-except:
-    integrate = None
 
 def update_params(state, t):
     '''
@@ -37,53 +33,35 @@ def update_params(state, t):
     L  = state['L'] / np.sqrt(2.*t - t**2)
     return mu, L
 
-def get_vals(state):
+def log_K(Z, X, t):
     '''
-    Get Values
-        Get the values out from the state to use for other purposes
-    Inputs:
-        state :
-            the state that keeps the values
-    Outputs:
-        x :
-            the value
-        f  : f(x)
-            the function value at x 
-    '''
-    x  = state['x']
-    f  = state['f']
-    return x, f
-
-def log_expo(z,mu,L):
-    '''
-    Log Expo
+    Log K
         Log of the proposal probability density function for gnm
     Inputs :
-        z :
-            location
-        mu :
-            mean of the proposal
-        L :
-            cholesky factor of the precision matrix
-    Outputs : 
+        Z :
+            proposed to
+        x : 
+            proposed from 
+    Outputs :   
         log of the probability density function
     '''
-    return np.log(det(L))-la.norm(np.dot(L.T,z-mu))**2/2. 
+    m, L = update_params(X, t)
+    z = Z['x']
+    return np.log(det(L))-la.norm(np.dot(L.T,z-m))**2/2. 
 
-def multi_normal(m,L):
+def multi_normal(X, t):
     ''' 
     Multivariate normal sampler:
         Generates normal samples with mean m, precision matrix LL' 
     Inputs:
-        m :
-            mean
-        L :
-            cholesky factor of the precision matrix
+        x : 
+            propose from 
     Outputs:
         normal with mean m and precision LL'
     '''
-    Z = np.random.standard_normal(np.shape(m)) # generate i.i.d N(0,1)
-    return  la.solve(L.T,Z)+m
+    m, L = update_params(X, t)
+    z = np.random.standard_normal(np.shape(m)) # generate i.i.d N(0,1)
+    return  la.solve(L.T,z)+m
 
 def det(L):
     '''
@@ -115,24 +93,21 @@ def det(L):
             det_L = det_L*L[i,i]
         return det_L
 
-def optimize(alpha, f_0, d_f_0, f_alpha, d_f_alpha, 
-        t1=0.1, t2=0.5):
+def optimize(t, f_0, d_f_0, f_t, d_f_t, t1=0.05, t2=0.5):
     '''
     Third order approximation to find the minimum of the function
         f : function to be optimized over
     Inputs :  
-        alpha : 
+        t : 
             previous step size
         f_0 : f(0),
             function value at 0
         d_f_0: f'(0),
             the derivative of the function at 0
-        f_alpha : f(alpha),
-            function value at alpha
-        d_f_alpha : f'(alpha),
-            the derivative of the function at alpha
-        gamma1, gamma2 :
-            the new step size will be picked in [gamma1*alpha,gamma2*alpha] 
+        f_t : f(t),
+            function value at t
+        d_f_t : f'(t),
+            the derivative of the function at t
         t1 : 
             step size reduction if minimum is at 0 or it can't be found  
         t2 : 
@@ -141,36 +116,36 @@ def optimize(alpha, f_0, d_f_0, f_alpha, d_f_alpha,
         alpha_new : 
             the new step size that minimizes the function
     '''
-    if alpha == 0 :
-        print("Error: please enter non-zero alpha")
-        return alpha
+    if t <= 0 :
+        print("Error: please enter non-negative t")
+        return t
 
-    a = (alpha*d_f_alpha-2*f_alpha+2*f_0+alpha*d_f_0)/(alpha**3)
-    b = (f_alpha-f_0-alpha*d_f_0)/(alpha**2)
+    a = (t*d_f_t-2*f_t+2*f_0+t*d_f_0)/(t**3)
+    b = (f_t-f_0-t*d_f_0)/(t**2)
     c = d_f_0
     A = 3*a
-    B = b-alpha*a
+    B = b-t*a
     C = B**2-A*c
 
     if C == 0. :
-        if c>0 or d_f_alpha>0 :
-            alpha_new = t1*alpha
+        if c>0 or d_f_t>0 :
+            t_new = t1*t
         else :
-            alpha_new = t2*alpha
+            t_new = t2*t
     elif A == 0 :
-        alpha_new = -c/2./B 
+        t_new = -c/2./B 
     elif C > 0 :
-        alpha_new = (-B+np.sqrt(C))/A
+        t_new = (-B+np.sqrt(C))/A
     else : 
-        alpha_new = t1*alpha
+        t_new = t1*t
 
     # check the bounds on new step size
-    if   alpha_new < t1*alpha :
-        alpha_new = t1*alpha
-    elif alpha_new > t2*alpha :
-        alpha_new = t2*alpha
+    if   t_new < t1*t :
+        t_new = t1*t
+    elif t_new > t2*t :
+        t_new = t2*t
 
-    return alpha_new
+    return t_new
 
 
 class function:
@@ -188,7 +163,7 @@ class function:
                 args : 
                     the arguments that the function takes
             Outputs of f :
-                f_defined_x : 
+                chi_x : 
                     boolean flag indicating whether the function is 
                     defined at x or not
                 f_x : f(x), 
@@ -196,7 +171,7 @@ class function:
                 J_x : f'(x), 
                     the jacobian of the function evaluated at x
             Demo : 
-                f_defined_x, f_x, J_x = f(x,args)
+                chi_x, f_x, J_x = f(x,args)
             ---
         args : 
             the arguments that the user defined function takes        
@@ -213,13 +188,13 @@ class function:
         x : 
             input value
     Outputs: 
-        f_defined_x, f_x, J_x = f(x,args)
+        chi_x, f_x, J_x = f(x,args)
         '''
         self._count += 1
         x = np.reshape(np.array(x), (-1)) 
-        f_defined_x, f_x, J_x = self._f(x, self.args)
+        chi_x, f_x, J_x = self._f(x, self.args)
         f_x = np.reshape(np.array(f_x), (-1,1))
-        return f_defined_x, f_x, np.array(J_x)
+        return chi_x, f_x, np.array(J_x)
         
     def Jtest(self, x_min, x_max, dx=0.0002, N=1000, eps_max=0.0001,
             p=2, l_max=50, r=0.5): 
@@ -227,9 +202,9 @@ class function:
     Gradient Checker
         Test the function's jacobian against the numerical jacobian
     Inputs :
-        xmin : 
+        x_min : 
             lower bound on the domain
-        xmax : 
+        x_max : 
             upper bound on the domain
         ** Warning **
             x_min and x_max must be arrays of the same dimension
@@ -272,10 +247,10 @@ class function:
                 +"corresponding values for x_max.")
             return 1
         try :
-            f_defined_x = False
-            while not f_defined_x : 
+            chi_x = False
+            while not chi_x : 
                 x = np.random.uniform(x_min,x_max)
-                f_defined_x, f_x, J_x = self.__call__(x)
+                chi_x, f_x, J_x = self.__call__(x)
                 assert J_x.ndim == 2
         except : 
             print("Error: Jacobian has to be a matrix.")
@@ -285,36 +260,36 @@ class function:
         k = 0 
         while k < N :
             # reset dx each time
-            Dx = (x_max - x_min) * dx
+            D_x = (x_max - x_min) * dx
 
             # Sample random points in the state space
-            x = np.random.uniform(x_min + Dx, x_max - Dx) 
+            x = np.random.uniform(x_min + D_x, x_max - D_x) 
 
             # Compute jacobian at x
             l = 0
             test_convergence = 1
             while test_convergence:
-                f_defined_x, f_x, J_x = self.__call__(x)
-                grad_f_x = J_x * 0.
+                chi_x, f_x, J_x = self.__call__(x)
+                D_f_x = J_x * 0.
                 for j in xrange(np.size(x)):
                     # calculate the derivative of each component of f
-                    delta_x = Dx * 0. 
-                    delta_x[j] = Dx[j] 
-                    f_defined_xr, f_xr, J_xr = self.__call__(x + delta_x) 
-                    f_defined_xl, f_xl, J_xl = self.__call__(x - delta_x)
+                    d_x = D_x * 0. 
+                    d_x[j] = D_x[j] 
+                    chi_x_r, f_x_r, J_x_r = self.__call__(x + d_x) 
+                    chi_x_l, f_x_l, J_x_l = self.__call__(x - d_x)
                     # check if the function is defined on these points
-                    if( not(f_defined_x and f_defined_xr and f_defined_xl)):
+                    if( not(chi_x and chi_x_r and chi_x_l)):
                     # discard this trial if one of the values is not defined
                         test_convergence = 0 # break outer loop
                         break
-                    delta_f = (f_xr - f_xl) / (2. * delta_x[j])
-                    grad_f_x[:,j] = delta_f[:,0]
-                eps = la.norm(grad_f_x - J_x, p) / np.size(J_x)
+                    d_f = (f_x_r - f_x_l) / (2. * d_x[j])
+                    D_f_x[:,j] = d_f[:,0]
+                eps = la.norm(D_f_x - J_x, p) / np.size(J_x)
                 if (eps < eps_max):
                     test_convergence = 0 # break outer loop
                     k += 1
                 else:
-                    Dx = Dx * r
+                    D_x = D_x * r
                     if (l > l_max): # numerical gradient did not converge 
                         return eps
                     l += 1
@@ -339,3 +314,4 @@ class function:
     @property
     def count(self):
         return self._count
+## end function ##

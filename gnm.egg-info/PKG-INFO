@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: gnm
-Version: 0.0.1
+Version: 0.4.0
 Summary: Rock n Rolling awesome affine-invariant MCMC Sampler
 Home-page: http://github.com/mugurbil/gnm
 Author: Mehmet Ugurbil
@@ -54,7 +54,7 @@ Description: gnm
         License
         -------
         
-        Copyright 2015-? Mehmet Ugurbil and contributors.
+        Copyright 2016-? Mehmet Ugurbil and contributors.
         
         gnm is free software made available under the MIT License. For details see
         the LICENSE file.
@@ -63,10 +63,10 @@ Description: gnm
         Change Log
         ---------
         
-        1.0.0 (2015-10-21)
+        0.4.0 (2016-3-4)
         ++++++++++++++++++
         
-        - Initial release.
+        - Initial Beta release.
 Platform: UNKNOWN
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers

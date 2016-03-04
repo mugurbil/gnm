@@ -1,4 +1,4 @@
-1.0.0 (2015-10-21)
+0.4.0 (2016-3-4)
 ++++++++++++++++++
 
-- Initial release.
+- Initial Beta release.
