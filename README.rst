@@ -58,7 +58,7 @@ Goodman
 Copyright
 ---------
 
-Copyright 2016 Mehmet_Ugurbil_ and contributors.
+Copyright 2016 [Mehmet Ugurbil]_ and contributors.
 
 .. _Mehmet_Ugurbil: http://www.cims.nyu.edu/~mu388
 
