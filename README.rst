@@ -23,12 +23,7 @@ $ pip install gnm
 
 To check that the package is working, you can run quickstart.py::
 
-$ python
-
-Once in python, run::
-
->> import gnm
->> gnm.test()
+$ python -c 'import gnm; gnm.test()'
 
 A plot should pop up.
 
@@ -58,10 +53,9 @@ Goodman
 Copyright
 ---------
 
-Copyright 2016 Mehmet_ Ugurbil_ and contributors.
+Copyright 2016 Mehmet_Ugurbil_ and contributors.
 
-.. _Mehmet: http://www.cims.nyu.edu/~mu388
-.. _Ugurbil: http://www.cims.nyu.edu/~mu388
+.. _Mehmet_Ugurbil: http://www.cims.nyu.edu/~mu388
 
 
 License

@@ -8,7 +8,7 @@ The Gauss-Newton-Metropolis Algorithm with back-off strategy is
 specialized in sampling highly non-linear posterior distributions. 
 """
 
-__all__ = ["Sampler"]
+__all__ = ["sampler"]
 
 import numpy as np
 la = np.linalg
