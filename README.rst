@@ -66,4 +66,6 @@ Copyright 2016 Mehmet_Ugurbil_ and contributors.
 License
 -------
 
-The gnm is free software made available under the MIT License. For details see the LICENSE file.
+The gnm is free software made available under the MIT License. For details see the LICENSE_ file.
+
+.. _LICENSE: LICENSE.rst
