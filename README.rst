@@ -60,7 +60,7 @@ Copyright
 
 Copyright 2016 Mehmet_Ugurbil_ and contributors.
 
-.. _Mehmet Ugurbil: http://www.cims.nyu.edu/~mu388
+.. _Mehmet_Ugurbil: http://www.cims.nyu.edu/~mu388
 
 
 License
