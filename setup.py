@@ -2,21 +2,40 @@
 # -*- coding: utf-8 -*-
 
 import os 
+import sys
+import re
 
 try:
     from setuptools import setup, Command
+    setup
 except ImportError:
     from distutils.core import setup, Command
+    setup
 
-def read(file): 
-    f = open(file)
-    r = f.read()
-    f.close()
-    return r
+if sys.argv[-1] == "publish":
+    os.system("python setup.py sdist upload")
+    sys.exit()
+
+# Handle encoding
+major, minor1, minor2, release, serial = sys.version_info
+if major >= 3:
+    def read(filename):
+        f = open(filename, encoding="utf-8")
+        r = f.read()
+        f.close()
+        return r
+else:
+    def read(filename):
+        f = open(filename)
+        r = f.read()
+        f.close()
+        return r
 
 def readme():
-    return(read('README.rst')+'\n\nChange Log\n---------\n\n'
-            +read('HISTORY.rst'))
+    return(read("README.rst")+"\n\n"+
+            "Change Log\n"+
+            "----------\n\n"+
+            read("HISTORY.rst"))
 
 class CleanCommand(Command):
     user_options = []
@@ -27,7 +46,6 @@ class CleanCommand(Command):
     def run(self):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
-import re
 vre = re.compile("__version__ = \"(.*?)\"")
 m = read(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                     "gnm", "__init__.py"))
@@ -35,7 +53,7 @@ version = vre.findall(m)[0]
 
 setup(
 	name='gnm',
-	version='0.4.0',
+	version=version,
 	description='Rock n Rolling awesome affine-invariant MCMC Sampler',
 	long_description=readme(),
 	url='http://github.com/mugurbil/gnm',

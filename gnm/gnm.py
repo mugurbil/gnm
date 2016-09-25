@@ -8,7 +8,7 @@ The Gauss-Newton-Metropolis Algorithm with back-off strategy is
 specialized in sampling highly non-linear posterior distributions. 
 """
 
-__all__ = ["sampler"]
+__all__ = ["Sampler"]
 
 import numpy as np
 la = np.linalg
@@ -19,7 +19,7 @@ import json # for save/load
 
 from .utils import *
 
-class sampler:
+class sampler(object):
 
     def __init__(self, x, model, args):
     	""" 
@@ -30,17 +30,51 @@ class sampler:
             initial guess
         model :
             user defined data model function
+        args :
+            arguments for the model
         """
         self._args = args
         self._f = function(model, args)
 
         x = np.reshape(np.array(x), (-1,1)) 
         self._n = np.size(x) # size of input space
-        chi_x, f_x, J_x = self._f(x)     
+        try: 
+            x = np.reshape(np.array(x), (-1)) 
+            out_x = model(x, self._args)
+        except TypeError as e:
+            raise TypeError(str(e)[:-7]+" needed)")
+
+        """
+        except IndexError as e:
+            raise IndexError("initial guess size does not fit model()\n    "
+                    +str(e))
+        except Exception as e:
+            print("Error: Model function could not be evaluated.")
+            print("     - Check size of intial guess.")
+            print("     - Check definition of the model.")
+            print(str(e))
+            print(type(e))
+            raise RuntimeError("model() could not be evaluated\n   ")
+        """
+
+        try:
+            chi_x, f_x, J_x = out_x
+            f_x = np.reshape(np.array(f_x), (-1,1))
+        except:
+            raise TypeError("model() needs to have 3 outputs: chi_x, f_x, J_x")
         try:
             assert chi_x == True
         except AssertionError:
-            print("Error: Initial guess out of range.")
+            raise ValueError("initial guess out of range")
+        try: 
+            self._mn = np.size(f_x)
+            J_x = np.array(J_x)
+            assert np.shape(J_x) == (self._mn, self._n)
+        except:
+            raise TypeError("Shape of Jacobian, " + str(np.shape(J_x)) + 
+                  ", is not correct, (%d, %d)." % (self._mn, self._n))
+
+        x = np.reshape(np.array(x), (-1,1)) 
         self._X = {'x':x,'f':f_x,'J':J_x} # state of x
 
         # prior parameters
@@ -73,7 +107,7 @@ class sampler:
             calculate this once to use everytime proposal is called
         """
         if self._prior == True:
-            print("warning: Prior information is already set.")
+            raise Warning("prior information is already set")
         else: 
             self._prior = True
 
@@ -82,18 +116,18 @@ class sampler:
         try : 
             assert np.size(self._m) == self._n
         except : 
-            print("Error: Mean has to be an array of size n.")
+            raise TypeError("mean has to be an array of size n")
 
         # precision
         self._H     = np.array(H)
         try : 
             assert np.shape(self._H) == (self._n, self._n)
         except : 
-            print("Error: Precision has to be a matrix of shape n by n.")
+            raise TypeError("precision has to be a matrix of shape n by n")
 
         # precalculations
         self._ln_H_ = np.log(la.det(self._H))/2.
-        self._Hm    = np.dot(self._H,self._m)
+        self._Hm    = np.dot(self._H, self._m)
 
     def Jtest(self, x_min, x_max, dx=0.0002, N=1000, eps_max=0.0001,
             p=2, l_max=50, r=0.5):
@@ -101,6 +135,18 @@ class sampler:
     Gradient Checker
         Test the function's jacobian against the numerical jacobian
         """
+        # check inputs x_min and x_max
+        try :
+            assert np.size(x_min) == self._n
+        except :
+            raise TypeError("dimension of x_min, %d, does not match the "
+                  "dimension of input, %d" % (np.size(x_min), self._n))
+        try :
+            assert np.size(x_max) == self._n
+        except :
+            raise TypeError("dimension of x_max, %d, does not match the "
+                  "dimension of input, %d." % (np.size(x_max), self._n))
+        # end checks and call developer function
     	return self._f.Jtest(x_min, x_max, dx=dx, N=N, eps_max=eps_max, p=p, 
     				  l_max=l_max, r=r)
 
@@ -326,16 +372,16 @@ class sampler:
         plot_range : (shape) = (number of dimensions, 2)
             matrix which contain the min and max for each dimension as rows
     Outputs :
-        x     : 
+        x     :
             domain
         p_x   :
             estimated posterior using the chain on the domain
-        error : 
+        error :
             estimated error for p_x
         """
         # fetch data
         chain = self._chain
-        length = len(chain)
+        len_chain = len(chain)
         try:
             n_dims = np.shape(chain)[1]
         except:
@@ -345,46 +391,42 @@ class sampler:
         try: 
             assert n_bins == int(n_bins)
         except: 
-            print("Number of bins has to be an integer.")
-            return 0
+            raise TypeError("number of bins has to be an integer")
         d_min = np.reshape(np.array(d_min), (-1,1))
         d_max = np.reshape(np.array(d_max), (-1,1))
         try: 
             assert np.size(d_min) == n_dims
         except: 
-            print("Domain minimum has wrong size.")
-            return 0
+            raise TypeError("domain minimum has wrong size")
         try: 
             assert np.size(d_max) == n_dims
         except: 
-            print("Domain maximum has wrong size.")
-            return 0
+            raise TypeError("domain maximum has wrong size")
         # end checks
 
         # initialize outputs
-        p_x   = np.zeros((n_dims, n_bins))    # esitmate of posterior
-        error = np.zeros((n_dims, n_bins))    # error bars
-        x     = np.zeros((n_dims, n_bins))    # centers of bins
+        p_x = np.zeros(n_bins) # esitmate of posterior
+        error = np.zeros(n_bins) # error bars
+        x = np.zeros((n_dims, n_bins)) # centers of bins
 
-        # loop through dimensions
-        for dim in xrange(n_dims):
-            x_min = d_min[dim]
-            x_max = d_max[dim]
-            dx    = float(x_max-x_min)/n_bins
-            # bin count 
-            for i in xrange(length):
-                if chain[i][dim] > x_min and chain[i][dim] < x_max:
-                    bin_no = int((chain[i][dim]-x_min)/dx)
-                    p_x[dim][bin_no] += 1.
-            # end count
-            p_x[dim] = p_x[dim]/(length*dx)
-            # find error
-            for i in xrange(n_bins):
-                p             = p_x[dim][i]
-                error[dim][i] = np.sqrt(p*(1./dx-p)/(length))
-                x[dim][i]     = x_min+(0.5+i)*dx
-            # end find
-        # end outer loop
+        # set dx
+        v = d_max-d_min
+        v_2 = np.dot(v.T, v)[0][0]
+
+        # bin count
+        for i in xrange(len_chain):
+            bin_no = int(np.floor(np.dot(chain[i].T-d_min,v)/v_2*n_bins)[0])
+            if n_bins > bin_no > -1:
+                p_x[bin_no] += 1.
+        # end count
+        dx = np.sqrt(v_2)/n_bins
+        p_x = p_x/(len_chain*dx)
+        # find error
+        for i in xrange(n_bins):
+            p = p_x[i]
+            error[i] = np.sqrt(p*(1./dx-p)/(len_chain))
+            x[:,i] = (d_min+v*(0.5+i)/n_bins)[0]
+        # end find
         return x, p_x, error
     # end error_bars
     

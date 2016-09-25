@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Here we provide the functions that the gnm sampler needs
-'''
+"""
 
-__all__=['update_params','log_K','multi_normal',
-            'det','optimize','function']
+__all__ = ['test','update_params','log_K','multi_normal', 'det','optimize','function']
 
 import numpy as np
 la = np.linalg
 
+def test():
+    import quickstart
+    
 def update_params(state, t):
-    '''
+    """
     Update parameters
         updates mean and precision to the step size
     Inputs:
@@ -28,13 +30,13 @@ def update_params(state, t):
             updated mean
         L  :
             updated cholesky factor of the precision matrix  
-    '''
+    """
     mu = (1.-t)*state['x'] + t*state['mu']
     L  = state['L'] / np.sqrt(2.*t - t**2)
     return mu, L
 
 def log_K(Z, X, t):
-    '''
+    """
     Log K
         Log of the proposal probability density function for gnm
     Inputs :
@@ -44,13 +46,13 @@ def log_K(Z, X, t):
             proposed from 
     Outputs :   
         log of the probability density function
-    '''
+    """
     m, L = update_params(X, t)
     z = Z['x']
     return np.log(det(L))-la.norm(np.dot(L.T,z-m))**2/2. 
 
 def multi_normal(X, t):
-    ''' 
+    """
     Multivariate normal sampler:
         Generates normal samples with mean m, precision matrix LL' 
     Inputs:
@@ -58,13 +60,13 @@ def multi_normal(X, t):
             propose from 
     Outputs:
         normal with mean m and precision LL'
-    '''
+    """
     m, L = update_params(X, t)
     z = np.random.standard_normal(np.shape(m)) # generate i.i.d N(0,1)
     return  la.solve(L.T,z)+m
 
 def det(L):
-    '''
+    """
     Determinant
         Compute the determinant given a lower triangular matrix
     Inputs: 
@@ -73,7 +75,7 @@ def det(L):
     Outputs: 
         det_L : 
             determinant of L
-    '''
+    """
     size_L = L.shape
     if np.size(L) == 1:
         return np.array(L)
@@ -94,7 +96,7 @@ def det(L):
         return det_L
 
 def optimize(t, f_0, d_f_0, f_t, d_f_t, t1=0.05, t2=0.5):
-    '''
+    """
     Third order approximation to find the minimum of the function
         f : function to be optimized over
     Inputs :  
@@ -115,7 +117,7 @@ def optimize(t, f_0, d_f_0, f_t, d_f_t, t1=0.05, t2=0.5):
     Outputs :
         alpha_new : 
             the new step size that minimizes the function
-    '''
+    """
     if t <= 0 :
         print("Error: please enter non-negative t")
         return t
@@ -148,10 +150,10 @@ def optimize(t, f_0, d_f_0, f_t, d_f_t, t1=0.05, t2=0.5):
     return t_new
 
 
-class function:
+class function(object):
 
     def __init__(self, f, args):
-        '''
+        """
     Init 
         Initialize the developer function class 
     Inputs :
@@ -175,13 +177,13 @@ class function:
             ---
         args : 
             the arguments that the user defined function takes        
-        '''
+        """
         self._f     = f 
         self._args  = args
         self._count = 0
 
     def __call__(self, x):
-        '''
+        """
     Call
         Calls the user defined function
     Inputs:
@@ -189,7 +191,7 @@ class function:
             input value
     Outputs: 
         chi_x, f_x, J_x = f(x,args)
-        '''
+        """
         self._count += 1
         x = np.reshape(np.array(x), (-1)) 
         chi_x, f_x, J_x = self._f(x, self.args)
@@ -230,31 +232,16 @@ class function:
           * 0 if converged, 
           * eps, the error of the numerical gradient point if no convergence
         """
-        # begin checks
-        try :
-            assert (np.size(x_min) == np.size(x_max))
-        except :
-            print("Error: Dimensions of x_min (%d) and x_max (%d) "
-                  "are not the same." % ( np.size(x_min), np.size(x_max) ) )
-            return 1 
         x_min = np.reshape(np.array(x_min), (-1)) 
         x_max = np.reshape(np.array(x_max), (-1)) 
+        # begin checks
         try: 
             for i in xrange(np.size(x_min)):
                 assert x_min[i] < x_max[i]
         except: 
             print("Error: All values of x_min should be less than the "
-                +"corresponding values for x_max.")
-            return 1
-        try :
-            chi_x = False
-            while not chi_x : 
-                x = np.random.uniform(x_min,x_max)
-                chi_x, f_x, J_x = self.__call__(x)
-                assert J_x.ndim == 2
-        except : 
-            print("Error: Jacobian has to be a matrix.")
-            return 1
+                 +"corresponding values for x_max.")
+            exit(0)
         # end checks
         # begin test
         k = 0 

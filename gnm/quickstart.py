@@ -3,7 +3,7 @@
 
 # Simple example with 1D Well
 print("----------------------------\n"+
-	  "-------Simple 1D Well-------\n"+
+	  "-------Test: 1D Well--------\n"+
 	  "----------------------------")
 
 import numpy as np
@@ -43,10 +43,10 @@ dilation = 0.1
 jagger.static(max_steps, dilation)
 
 # start sampling
-print("\nSampling...")
+print("Sampling...")
 n_samples = 1.1*10**4
 jagger.sample(n_samples)
-jagger.save()
+print("Done!")
 
 # burn the initial samples
 n_burn = 10**3
@@ -64,8 +64,8 @@ n_grid = 100
 D_min = [-3.]
 D_max = [3.]
 x, p_x, err = jagger.error_bars(n_grid, D_min, D_max)
-plt.plot(x[0], p_x[0], color = 'b', marker='o', label="Sampled", linewidth=0)    
-plt.errorbar(x[0], p_x[0], yerr = err[0], fmt = 'b.') 
+plt.plot(x[0], p_x, color = 'b', marker='o', label="Sampled", linewidth=0)    
+plt.errorbar(x[0], p_x, yerr = err, fmt = 'b.') 
 
 # create theoretical plot
 #   # initialize curve
@@ -88,4 +88,4 @@ plt.title(title)
 plt.xlabel("x")
 plt.ylabel("Probability")
 plt.show() 
-print 
+print("------------FIN!------------")

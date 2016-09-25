@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__version__ = "0.0.1"
-
 from .gnm import *
 from .utils import *
+
+__version__ = "0.4.0"

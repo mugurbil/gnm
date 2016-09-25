@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # Simple example with 1D Well
-print("---------------------------------------\n"+
-      "----------------1D Well----------------\n"+
-      "---------------------------------------")
+print("-----------------------\n"+
+      "--------1D Well--------\n"+
+      "-----------------------")
 
 import numpy as np
 import gnm
@@ -34,7 +34,7 @@ parser.add_option('-H', dest='H', type='float',
                 default=1, help='precision of prior')
 # data info
 parser.add_option('-y', dest='y', type='float',
-                default=2, help='observed data point')
+                default=4, help='observed data point')
 parser.add_option('-s', dest='s', type='float',
                 default=1, help='observed standard deviation')
 # back off info
@@ -49,7 +49,7 @@ parser.add_option('--fancy', dest='fancy', action='store_true',
 #                 default=True, help='toggle off progressbar')
 # sampling info
 parser.add_option('-n', dest='n_samples', type='int',
-                default=1*10**5, help='number of samples')
+                default=1*10**6, help='number of samples')
 parser.add_option('-b', dest='n_burn', type='int',
                 default=10**3, help='number of samples to burn')
 # plotting info
@@ -84,7 +84,7 @@ if opts.fancy:
 else: 
     jagger.static(opts.max, opts.size)
 start_time = time.time()
-jagger.sample(opts.n_samples, divs = 100, visual=True)
+jagger.vsample(opts.n_samples)
 
 jagger.burn(opts.n_burn)
 
@@ -114,9 +114,9 @@ else :
     sz = "step_size=" + str(opts.size)
 
 plt.plot(x[0], curve, color = 'k', linewidth = 2, label='Theoretical')
-plt.plot(x[0], p_x, color = 'b', marker = 'o', linewidth = 0, 
+plt.plot(x[0], p_x[0], color = 'b', marker = 'o', linewidth = 0, 
 	label='Sampled')    
-plt.errorbar(x[0], p_x, yerr = err, fmt = 'b.') 
+plt.errorbar(x[0], p_x[0], yerr = err[0], fmt = 'b.') 
 title = ("1D Well: $p(x|y=%d)=exp(\\frac{-x^2}{2}" % opts.y +
 	     "+\\frac{-(x^2-%d)^2}{2})$" % opts.y )
 plt.title(title)

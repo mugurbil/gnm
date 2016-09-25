@@ -33,8 +33,7 @@ H              = [[1.,0.],
 arguments      = {'a':1, 'b':2}
 num_samples    = 10000
 num_burn       = 200
-angle          = 1*np.pi/2 # angle is measured ccw from +x axis
-plot_range     = [[-3.,-3.],[3.,3.]]
+plot_range     = [[-3.,3.],[3.,3 .]]
 num_grid_pts   = 1000 # for theoretical plot
 num_bins       = 50 # for histogram
 max_steps      = 2 
@@ -77,7 +76,8 @@ check(error)
 
 # sample the likelihood
 start_time    = time.time()
-sampler       = gnm.sampler(m, funky, arguments, m=m, H=H)
+sampler       = gnm.sampler(m, funky, arguments)
+sampler.prior(m, H)
 sampler.sample(num_samples)
 # chain         = sampler.burn_in(num_burn)
 end_time      = time.time()
@@ -86,15 +86,13 @@ print 'Ellapsed Time        : ' + str(end_time-start_time)
 print 
 
 # histogram of samples
-matrix = np.array([[np.cos(angle), -np.sin(angle)],
-                   [np.sin(angle), np.cos(angle)]])
-chain = np.dot(sampler.chain, matrix)
+chain = sampler.chain
 plot_sampled = plt.hist(chain[:,0], num_bins,color = 'b',
                        range=[plot_range[0][0], plot_range[1][0]],normed=True,
                        label='sampled',alpha=0.3)
 
 ### START QUADRATURE ###
-def integrator(integrand,xmin,xmax,n_points,theta,factor=2):
+def integrator(integrand,xmin,xmax,n_points,factor=2):
     '''
     Creating theoretical curve for 2D model functions
     integrator function
@@ -105,14 +103,14 @@ def integrator(integrand,xmin,xmax,n_points,theta,factor=2):
     for i in xrange(n_points+1):
         xnow = xmin + i * dx
         integral, error = integrate.quad(rotate(integrand,
-                xnow,theta), xmin*factor, xmax*factor)
+                xnow), xmin*factor, xmax*factor)
         integral_vector[i] = integral
     # normalize
     normalization = np.average(integral_vector)*(xmax-xmin)
     normalized_vector = integral_vector/normalization
     return normalized_vector
 
-def rotate(f,x,theta):
+def rotate(f,x,theta=0):
     '''
     Returns a function that takes as input the 1D vector along the angle
     given a function that takes in 2D input
@@ -123,23 +121,20 @@ def rotate(f,x,theta):
 
 x_space = np.linspace(plot_range[0][0],plot_range[1][0],num=num_grid_pts+1)
 quadrature_curve = integrator(sampler.posterior, plot_range[0][0],
-        plot_range[1][0], num_grid_pts, angle)
+        plot_range[1][0], num_grid_pts)
 plot_theoretical = plt.plot(x_space, quadrature_curve, color = 'r',
                             linewidth =1, label='theoretical')
 ### END QUADRATURE ###
 
 # error bars
 z, fhat, epsf = sampler.error_bars(num_bins, plot_range[0], plot_range[1])
-z = np.dot(z.T, matrix).T       # rotate
-fhat = np.dot(fhat.T, matrix).T # rotate
-epsf = np.dot(epsf.T, matrix).T # rotate
-p3 = plt.plot(z[0], fhat[0] , color = 'b', marker = 's', linewidth = 0, 
+p3 = plt.plot(z[0], fhat , color = 'b', marker = 's', linewidth = 0, 
                 alpha=0.0)
-plt.errorbar(z[0], fhat[0] , yerr = epsf[0], fmt = 'k.')
+plt.errorbar(z[0], fhat , yerr = epsf, fmt = 'k.')
 
 # plot labels
 plt.title("Simple 2D-Function Posterior PDF")
-plt.xlabel("Location (Angle to +x CCW {:.0f}$^o$)".format(angle*180/np.pi))
+plt.xlabel("Location")
 plt.ylabel("Posterior Probability")
 plt.legend()
 plt.savefig('simple_2d.pdf',dpi = 500) 
