@@ -8,6 +8,8 @@ gnm: The MCMC Jagger
    :height: 14 px
    :width: 14 px
    :scale: 20 %
+   :alt: alternate text
+   :align: right
 
 | **The Python sampling toolkit for affine-invariant MCMC** |
 +-----------------------------------+-----------------------------------------------------------+
