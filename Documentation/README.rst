@@ -5,11 +5,15 @@ User Guide
 
 .. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation 
 
-   a. Pip Installation
+   a. Requirments
 
-   b. Manual Installation
+   b. Pip Installation
 
-   c. Test the Installation
+   c. Manual Installation
+
+   d. `Test the Installation`_
+
+   .. _Test the Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation#test-the-installation
 
 
 2. Quickstart_
