@@ -3,7 +3,7 @@ gnm: The MCMC Jagger
 
 +------------------------+-----------------------------------------------------------+
 |.. image:: guitar.png   | **The Python sampling toolkit for affine-invariant MCMC** |
-|		:scale: 30%		 |	Rock and Rolling 										 |
+		:scale: 30%		 	 										 
 +------------------------+-----------------------------------------------------------+
 
 
