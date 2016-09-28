@@ -12,7 +12,7 @@ Documentation
 
 Read the guide at Documentation_.
 
-.. _Documentation: https://github.com/mugurbil/gnm/tree/master/Documentation/
+.. _Documentation: https://github.com/mugurbil/gnm/tree/master/Documentation/#user-guide
 
 Attribution
 -----------

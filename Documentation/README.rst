@@ -3,7 +3,7 @@ User Guide
 
 1) Installation_
 
-.. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation 
+.. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation#installation
 
    a) Requirements_
 
