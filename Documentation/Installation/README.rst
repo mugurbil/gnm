@@ -2,7 +2,7 @@ Installation
 ============
 
 a) Requirements
-   ------------
+---------------
 
 To use the gnm package, the package numpy_ needs to be installed. 
 
@@ -19,7 +19,7 @@ The autocorrelation feature demands the installation of the acor_ package.
 From the default packages, one will need os, setuptools (or distutils), re, sys, copy, and json. These packages likely come with any python installation.
 
 b) Pip Installation
-   ----------------
+-------------------
 
 The easiest way to install gnm would be to use pip_::
 
@@ -28,7 +28,7 @@ $ pip install gnm
 .. _pip: https://pip.pypa.io/en/stable/
 
 c) Manual Installation
-   -------------------
+----------------------
 
 To download manually, use git clone or download as zip (see right hand side)::
 
@@ -39,7 +39,7 @@ Then you can install manually by going into the gnm directory, and then runing s
 $ python setup.py install
 
 d) Test the Installation
-   ---------------------
+------------------------
 
 To check that the package is working, you can run quicktest::
 
