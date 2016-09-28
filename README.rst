@@ -1,8 +1,10 @@
+.. image:: guitar.png
+    :align: left
+
 gnm: The MCMC Jagger
 ====================
 
-.. image:: guitar.png
-    :align: left
+
 
 **The Python sampling toolkit for affine-invariant MCMC**
 
