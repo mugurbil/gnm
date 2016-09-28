@@ -67,14 +67,14 @@ Goodman_
 Copyright
 ---------
 
-Copyright 2016 Mehmet_Ugurbil_ and contributors.
+Copyright 2016 `Mehmet Ugurbil`_ and contributors.
 
-.. _Mehmet_Ugurbil: http://www.cims.nyu.edu/~mu388
+.. _Mehmet Ugurbil: http://www.cims.nyu.edu/~mu388
 
 
 License
 -------
 
-The gnm is free software made available under the MIT LICENSE_.
+The gnm is free software made available under the `MIT LICENSE`_.
 
-.. _LICENSE: LICENSE.rst
+.. _MIT LICENSE: LICENSE.rst

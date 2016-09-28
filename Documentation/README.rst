@@ -3,7 +3,7 @@ User Guide
 
 Installation_
 
-_Installation: 
+_Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation 
 
 Using pip
 
