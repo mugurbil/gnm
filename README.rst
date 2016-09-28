@@ -5,8 +5,8 @@ gnm: The MCMC Jagger
 
 
 .. image:: guitar.png
-   :height: 54 px
-   :width: 54 px
+   :height: 14 px
+   :width: 14 px
 
 | **The Python sampling toolkit for affine-invariant MCMC** |
 +-----------------------------------+-----------------------------------------------------------+
