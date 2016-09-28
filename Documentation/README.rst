@@ -1,25 +1,25 @@
 User Guide
 ==========
 
-   1) Installation_
+	1) Installation_
 
-   .. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#1-installation
+	.. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#1-installation
 
-	   a) Requirements_
+		a) Requirements_
 
-	   .. _Requirements: https://github.com/mugurbil/gnm/tree/master/Documentation#a-requirements
+		.. _Requirements: https://github.com/mugurbil/gnm/tree/master/Documentation#a-requirements
 
-	   b) `Pip Installation`_
+		b) `Pip Installation`_
 
-	   .. _Pip Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#b-pip-installation
+		.. _Pip Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#b-pip-installation
 
-	   c) `Manual Installation`_
+		c) `Manual Installation`_
 
-	   .. _Manual Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#c-manual-installation
+		.. _Manual Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#c-manual-installation
 
-	   d) `Test the Installation`_
+		d) `Test the Installation`_
 
-	   .. _Test the Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#d-test-the-installation
+		.. _Test the Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#d-test-the-installation
 
 	2) Quickstart_
 
