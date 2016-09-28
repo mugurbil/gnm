@@ -25,7 +25,9 @@ To check that the package is working, you can run quickstart.py::
 
 $ python -c 'import gnm; gnm.test()'
 
-A plot should pop up.
+A plot_ should pop up.
+
+.. _plot: https://github.com/mugurbil/gnm/Documentation/gnm_test.png
 
 Manual Installation
 -------------------
