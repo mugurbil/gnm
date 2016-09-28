@@ -1,12 +1,3 @@
-gnm
-===
-
-**The Python sampling toolkit for affine-invariant MCMC**
-
-The gnm is a stable, well tested Python implementation of the affine-invariant sampler for Markov chain Monte Carlo (MCMC) that uses the Gauss-Newton-Metropolis (GNM) Algorithm.
-
-The code is open source.
-
 Requirements
 ------------
 
@@ -49,32 +40,3 @@ $ git clone https://github.com/mugurbil/gnm.git
 Then you can install manually by going into the gnm directory, and then runing setup.py::
 
 $ python setup.py install
-
-Documentation
--------------
-
-Read the guide at Documentation_.
-
-.. _Documentation: http://www.cims.nyu.edu/~mu388
-
-Attribution
------------
-
-Goodman_
-
-.. _Goodman: http://www.math.nyu.edu/faculty/goodman/
-
-Copyright
----------
-
-Copyright 2016 Mehmet_Ugurbil_ and contributors.
-
-.. _Mehmet_Ugurbil: http://www.cims.nyu.edu/~mu388
-
-
-License
--------
-
-The gnm is free software made available under the MIT LICENSE_.
-
-.. _LICENSE: LICENSE.rst
