@@ -3,7 +3,7 @@ gnm: The MCMC Jagger
 
 .. image:: guitar.png
     :alt: text
-    :align: right
+    :align: text-align
 
 **The Python sampling toolkit for affine-invariant MCMC**
 
