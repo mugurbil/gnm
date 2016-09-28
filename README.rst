@@ -1,10 +1,10 @@
 .. container:: twocol
 
-	.. container:: leftside
+	.. container:: left
 
 		.. image:: guitar.png
 
-	.. container:: rightside
+	.. container:: right
 
 		gnm: The MCMC Jagger
 		====================
