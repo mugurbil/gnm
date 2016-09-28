@@ -27,7 +27,7 @@ $ python -c 'import gnm; gnm.test()'
 
 A plot_ should pop up.
 
-.. _plot: https://github.com/mugurbil/gnm/Documentation/gnm_test.png
+.. _plot: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
 
 Manual Installation
 -------------------
