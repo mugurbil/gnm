@@ -1,11 +1,11 @@
 User Guide
 ----------
 
-1. Installation_
+1) Installation_
 
 .. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation 
 
-   a. Requirments_
+   a) Requirments_
 
    .. _Requirments: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation#requirments
 
