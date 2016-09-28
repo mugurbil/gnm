@@ -10,7 +10,17 @@ The code is open source.
 Requirements
 ------------
 
-To use the gnm package, the package numpy needs to be installed. For the examples and plotting the results, matplotlib is required. The acor feature demands the installation of the acor package.
+To use the gnm package, the package numpy_ needs to be installed. 
+
+.. _numpy: http://www.numpy.org/
+
+For the examples and plotting the results, matplotlib_ is required. 
+
+.. _matplotlib: http://matplotlib.org/
+
+The autocorrelation feature demands the installation of the acor_ package.
+
+.. _acor: http://www.math.nyu.edu/faculty/goodman/software/acor/
 
 From the default packages, one will need os, setuptools (or distutils), re, sys, copy, and json. These packages likely come with any python installation.
 
@@ -50,7 +60,9 @@ Read the guide at Documentation_.
 Attribution
 -----------
 
-Goodman
+Goodman_
+
+.. _Goodman: http://www.cims.nyu.edu/~goodman
 
 Copyright
 ---------
