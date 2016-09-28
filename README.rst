@@ -2,7 +2,12 @@ gnm: The MCMC Jagger
 ====================
 
 +-----------------------------------+-----------------------------------------------------------+
-|.. image:: guitar.png :scale: 30%  | **The Python sampling toolkit for affine-invariant MCMC** |
+
+
+.. image:: guitar.png 
+	:scale: 30%  
+
+| **The Python sampling toolkit for affine-invariant MCMC** |
 +-----------------------------------+-----------------------------------------------------------+
 
 
