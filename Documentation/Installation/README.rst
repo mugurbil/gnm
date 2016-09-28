@@ -23,9 +23,9 @@ b. Pip Installation
 
 The easiest way to install gnm would be to use pip_::
 
-.. _pip: https://pip.pypa.io/en/stable/
-
 $ pip install gnm
+
+.. _pip: https://pip.pypa.io/en/stable/
 
 c. Manual Installation
 ----------------------
