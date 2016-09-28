@@ -45,7 +45,9 @@ To check that the package is working, you can run quicktest::
 
 $ python -c 'import gnm; gnm.test()'
 
-There should be some information on the terminal, and a plot should pop up that looks like this::
+There should be some information on the terminal, and a plot should pop up that looks like this:
+
+.. code-block:: terminal
 
 ----------------------------
 -------Test: 1D Well--------
@@ -57,6 +59,5 @@ Number Sampled  : 1.1e+04
 Number Burned   : 1.0e+03
 Number Used     : 1.0e+04
 
-::
 
 .. image:: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
