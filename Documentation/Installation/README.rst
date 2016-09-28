@@ -41,7 +41,7 @@ $ python setup.py install
 d) Test the Installation
 ------------------------
 
-To check that the package is working, you can run quicktest::
+To check that the package is working, you can run a quickt est::
 
 $ python -c 'import gnm; gnm.test()'
 

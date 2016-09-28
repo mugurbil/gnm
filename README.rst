@@ -1,5 +1,5 @@
-gnm
-===
+gnm: The MCMC Jagger
+====================
 
 **The Python sampling toolkit for affine-invariant MCMC**
 
