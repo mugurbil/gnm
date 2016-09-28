@@ -21,11 +21,11 @@ From the default packages, one will need os, setuptools (or distutils), re, sys,
 b. Pip Installation
 -------------------
 
-The easiest way to install gnm would be to use _pip.
+The easiest way to install gnm would be to use pip_.
 
 .. _pip: https://pip.pypa.io/en/stable/
 
-::
+:
 
 $ pip install gnm
 
