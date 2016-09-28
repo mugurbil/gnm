@@ -57,4 +57,6 @@ Number Sampled  : 1.1e+04
 Number Burned   : 1.0e+03
 Number Used     : 1.0e+04
 
+::
+
 .. image:: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
