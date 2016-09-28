@@ -1,4 +1,4 @@
-.. container:: clearer
+.. sidebar:: Something
 
 	.. image:: guitar.png
 
