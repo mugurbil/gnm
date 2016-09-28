@@ -1,13 +1,10 @@
-.. container:: twocol
+.. container:: clearer
 
-	.. container:: left
+	.. image:: guitar.png
 
-		.. image:: guitar.png
 
-	.. container:: right
-
-		gnm: The MCMC Jagger
-		====================
+gnm: The MCMC Jagger
+====================
 
 **The Python sampling toolkit for affine-invariant MCMC**
 
