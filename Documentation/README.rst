@@ -1,21 +1,17 @@
 User Guide
 ----------
 
-Installation_
+1. Installation_
 
-_Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation 
+.. _Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation 
 
-Using pip
+   a. Pip Installation
 
-From source
-Bleeding edge development version
-Test the installation
-Quickstart
-How to sample a multi-dimensional Gaussian
-Example: Fitting a Model to Data
-The generative probabilistic model
-Maximum likelihood estimation
-Marginalization & uncertainty estimation
-Results
+   b. Manual Installation
+
+   c. Test the Installation
 
 
+2. Quickstart_
+
+.. _Quickstart: https://github.com/mugurbil/gnm/tree/master/Documentation/Quickstart

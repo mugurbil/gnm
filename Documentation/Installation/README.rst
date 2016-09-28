@@ -15,20 +15,12 @@ The autocorrelation feature demands the installation of the acor_ package.
 
 From the default packages, one will need os, setuptools (or distutils), re, sys, copy, and json. These packages likely come with any python installation.
 
-Installation
-------------
+Pip Installation
+----------------
 
 The easiest way to install gnm would be to use pip::
 
 $ pip install gnm
-
-To check that the package is working, you can run quickstart.py::
-
-$ python -c 'import gnm; gnm.test()'
-
-A plot_ should pop up.
-
-.. _plot: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
 
 Manual Installation
 -------------------
@@ -40,3 +32,14 @@ $ git clone https://github.com/mugurbil/gnm.git
 Then you can install manually by going into the gnm directory, and then runing setup.py::
 
 $ python setup.py install
+
+Test the Installation
+---------------------
+
+To check that the package is working, you can run quicktest::
+
+$ python -c 'import gnm; gnm.test()'
+
+A plot should pop up that looks like this:
+
+.. image:: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
