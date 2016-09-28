@@ -11,7 +11,7 @@ User Guide
 
    b. `Pip Installation`_
 
-   .. _Pip Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation#manual-installation
+   .. _Pip Installation: https://github.com/mugurbil/gnm/tree/master/Documentation/Installation#pip-installation
 
    c. `Manual Installation`_
 
