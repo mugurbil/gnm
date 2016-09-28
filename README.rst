@@ -37,7 +37,7 @@ $ python -c 'import gnm; gnm.test()'
 
 A plot should pop up.
 
-.. plot:: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
+.. image:: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
 
 Manual Installation
 -------------------
