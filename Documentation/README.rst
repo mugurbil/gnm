@@ -23,7 +23,7 @@ User Guide
 
 	2) `Simple Use`_
 
-	.. _Simple Use: https://github.com/mugurbil/gnm/tree/master/Documentation#2-basic-usage
+	.. _Simple Use: https://github.com/mugurbil/gnm/tree/master/Documentation#2-simple-use
 
 1. Installation
 ===============
@@ -80,6 +80,8 @@ There should be some information on the terminal, and a plot should pop up that 
 =============
 
 Sampling from a 5D Gaussian could be done as follows::
+
+.. highlight:: python
 
 	import numpy as np
 	import gnm
