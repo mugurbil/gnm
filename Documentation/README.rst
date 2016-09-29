@@ -21,9 +21,9 @@ User Guide
 
 		.. _Test the Installation: https://github.com/mugurbil/gnm/tree/master/Documentation#d-test-the-installation
 
-	2) Quickstart_
+	2) `Simple Use`_
 
-	.. _Quickstart: https://github.com/mugurbil/gnm/tree/master/Documentation#2-quickstart
+	.. _Simple Use: https://github.com/mugurbil/gnm/tree/master/Documentation#2-basic-usage
 
 1. Installation
 ===============
@@ -68,7 +68,7 @@ $ python setup.py install
 d) Test the Installation
 ------------------------
 
-To check that the package is working, you can run a quickt est::
+To check that the package is working, you can run a quick test::
 
 $ python -c 'import gnm; gnm.test()'
 
@@ -76,6 +76,19 @@ There should be some information on the terminal, and a plot should pop up that 
 
 .. image:: https://github.com/mugurbil/gnm/blob/master/Documentation/gnm_test.png
 
-2. Quickstart
+2. Simple Use
 =============
+
+Sampling from a 5D Gaussian could be done as follows::
+
+	import numpy as np
+	import gnm
+
+	x_0 = [0, 0, 0, 0, 0] # initial guess
+	def model(x, args):
+	    s = args['s']
+	    return 1, np.dot(s,x)/np.sqrt(2), s/np.sqrt(2)
+	arg = {'s':np.eye(5)}
+	jagger = gnm.sampler(x_0, model, arg)
+	jagger.sample(1000)
 

@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Simple example with 1D Well to test installation
+# Simple example with 1D Well
+print("----------------------------\n"+
+	  "-------Test: 1D Well--------\n"+
+	  "----------------------------")
 
 import numpy as np
 import gnm
+import time
+import matplotlib.pyplot as plt
 
 # random seeding
 np.random.seed(3)
@@ -53,7 +58,6 @@ print("Number Sampled  : {:.1e}".format(n_samples))
 print("Number Burned   : {:.1e}".format(n_burn))
 print("Number Used     : {:.1e}".format(n_samples - n_burn))
 
-import matplotlib.pyplot as plt
 # create plot info 
 n_grid = 100
 # domain for error_bars
@@ -84,3 +88,4 @@ plt.title(title)
 plt.xlabel("x")
 plt.ylabel("Probability")
 plt.show() 
+print("------------FIN!------------")
