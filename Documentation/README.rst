@@ -79,7 +79,7 @@ There should be some information on the terminal, and a plot should pop up that 
 2. Simple Use
 =============
 
-Sampling from a 5D Gaussian could be done as follows::
+Sampling from a 5D Gaussian could be done as follows:
 
 .. highlight:: python
 
