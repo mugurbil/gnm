@@ -88,9 +88,11 @@ Sampling from a 5D Gaussian could be done as follows:
 
 	x_0 = [0, 0, 0, 0, 0] # initial guess
 	def model(x, args):
-	    s = args['s']
+	    S = args['s']
+	    m = args['m']
 	    return 1, np.dot(s,x)/np.sqrt(2), s/np.sqrt(2)
-	arg = {'s':np.eye(5)}
+	arg = {'S':np.eye(5)} 
 	jagger = gnm.sampler(x_0, model, arg)
 	jagger.sample(1000)
+
 
