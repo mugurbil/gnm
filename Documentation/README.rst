@@ -81,7 +81,7 @@ There should be some information on the terminal, and a plot should pop up that 
 
 Sampling from a 5D Gaussian could be done as follows:
 
-.. highlight:: python
+.. code-block:: python
 
 	import numpy as np
 	import gnm
