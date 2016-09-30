@@ -82,7 +82,6 @@ There should be some information on the terminal, and a plot should pop up that 
 Sampling from a 2D Gaussian could be done as follows:
 
 .. code-block:: python
-
 	import gnm
 
 	x_0 = [0] # initial guess
