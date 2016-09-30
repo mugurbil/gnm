@@ -79,7 +79,18 @@ There should be some information on the terminal, and a plot should pop up that 
 2. Simple Use
 =============
 
-Sampling from a 5D Gaussian could be done as follows:
+Sampling from a 2D Gaussian could be done as follows:
+
+.. code-block:: python
+
+	import gnm
+
+	x_0 = [0] # initial guess
+	def model(x, args):
+	    return 1, x, [[1,0], [0,1]]
+    args = {}
+	jagger = gnm.sampler(x_0, model, args)
+	jagger.sample(1000)
 
 .. code-block:: python
 
@@ -91,8 +102,8 @@ Sampling from a 5D Gaussian could be done as follows:
 	    S = args['s']
 	    m = args['m']
 	    return 1, np.dot(S,(x-m)), S
-	arg = {'S':np.eye(5), 'm':[0,1,2,3,4]} 
-	jagger = gnm.sampler(x_0, model, arg)
+	args = {'S':np.eye(5), 'm':[0,1,2,3,4]} 
+	jagger = gnm.sampler(x_0, model, args)
 	jagger.sample(1000)
 
 
