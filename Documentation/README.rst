@@ -87,7 +87,7 @@ Sampling from a 2D Gaussian could be done as follows:
 
 	x_0 = [0] # initial guess
 	def model(x, args):
-		return 1, x, [[1,0], [0,1]]
+	   return 1, x, [[1,0], [0,1]]
 	args = {}
 	jagger = gnm.sampler(x_0, model, args)
 	jagger.sample(1000)
