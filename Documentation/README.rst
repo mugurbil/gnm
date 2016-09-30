@@ -85,12 +85,14 @@ Sampling from a 2D Gaussian could be done as follows:
 
 	import gnm
 
-	x_0 = [0] # initial guess
+	x_0 = [0, 0] # initial guess
 	def model(x, args):
 	   return 1, x, [[1,0], [0,1]]
 	args = {}
 	jagger = gnm.sampler(x_0, model, args)
 	jagger.sample(1000)
+
+Here, we import the package, then set up an initial guess, a model, arguments for the model (empty in this case), and then feed these to the sampler. Finally, we sample. The model has to take in the input and arguments, and in turn return a flag, function, and the derivative (Jacobian) of the function. 
 
 .. code-block:: python
 
