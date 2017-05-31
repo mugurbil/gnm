@@ -5,7 +5,6 @@ Author:
 Direct contributions to the code base:
 
 - `Bo Zhu (NYU) `_
-- `Saad Khan (NYU) `_
 
 Comments, corrections & suggestions:
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Simple example with 1D Well
@@ -22,13 +21,13 @@ def model(x, args):
     s = args['s']
     return 1, [(x[0]**2-y)/s], [[(2.*x[0])/s]]
 # observed data and error = arguments for the user function
-data = {'y':[1.], 's':1.}    
+data = {'y':[1.], 's':0.4}    
 # sampler object
 jagger = gnm.sampler(x_0, model, data)
 # user-defined prior mean and precision 
-m = [0.]   # vector
-H = [[1.]] # matrix
-jagger.prior(m, H)
+# m = [0.]   # vector
+# H = [[1./data['s']**2]] # matrix
+# jagger.prior(m, H)
 
 # domain for Jtest
 d_min = [-3.]
@@ -44,12 +43,12 @@ jagger.static(max_steps, dilation)
 
 # start sampling
 print("Sampling...")
-n_samples = 1.1*10**4
+n_samples = 1.1*10**5
 jagger.sample(n_samples)
 print("Done!")
 
 # burn the initial samples
-n_burn = 10**3
+n_burn = 10**4
 jagger.burn(n_burn)
 
 # print results

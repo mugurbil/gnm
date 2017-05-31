@@ -1,8 +1,14 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
-Here we provide the functions that the gnm sampler needs
+Functions needed by the gnm sampler
+1. test
+2. update_params
+3. log_K
+4. multi_normal
+5. det
+6. optimize
+7. function
 """
 
 __all__ = ['test','update_params','log_K','multi_normal', 'det','optimize','function']

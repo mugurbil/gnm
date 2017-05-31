@@ -3,14 +3,17 @@ gnm: The MCMC Jagger
 
 **Rock and Rolling awesome Python package for affine-invariant MCMC sampling**
 
-The gnm is a stable, well tested Python implementation of the affine-invariant sampler for Markov chain Monte Carlo (MCMC) that uses the Gauss-Newton-Metropolis (GNM) Algorithm. The GNM algorithm is specialized in sampling highly non-linear posterior probability distribution functions of the form exp(-||f(x)||^2/2). 
+gnm is a well tested Python implementation of the affine-invariant sampler for Markov chain Monte Carlo (MCMC) that uses the Gauss-Newton-Metropolis (GNM) Algorithm. The GNM algorithm is specialized in sampling highly non-linear posterior probability distribution functions of the form exp(-||f(x)||^2/2). 
 
-Documentation
--------------
 
-Documentation_.
+Pages
+-----
 
-.. _Documentation: http://cims.nyu.edu/~mu388/gnm/
+home_, github_
+
+.. _home: http://montecarlosampler.com
+
+.. _github: https://github.com/mugurbil/gnm
 
 Attribution
 -----------
@@ -24,12 +27,10 @@ Copyright
 
 Copyright 2016 `Mehmet Ugurbil`_ and contributors.
 
-.. _Mehmet Ugurbil: http://www.cims.nyu.edu/~mu388
+.. _Mehmet Ugurbil: http://montecarlosampler.com/memo
 
 
 License
 -------
 
-gnm is a free software made available under the `MIT LICENSE`_.
-
-.. _MIT LICENSE: LICENSE.rst
+gnm is a free software made available under the MIT LICENSE.

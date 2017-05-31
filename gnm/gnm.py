@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -212,13 +211,12 @@ class sampler(object):
         try : 
             self._max_steps = int(max_steps)
         except :
-            print("Error: Input 1 (max_steps) has to be an int.")
+            raise TypeError("input 1 (max_steps) has to be an integer")
             return 0
         try : 
             assert self._max_steps >= 0
         except : 
-            print("Warning: Input 1 (max_steps) has to be non-negative.")
-            print("Setting max_steps to 0.")
+            raise Warning("input 1 (max_steps) has to be non-negative. Setting (max_steps) to 0.")
             self._max_steps = 0
 
         self._opts = opts
@@ -329,7 +327,7 @@ class sampler(object):
         try:
             import acor
         except ImportError:
-            print "Can't import acor, please download."
+            print("Can't import acor, please download it.")
             return 0
         n = np.shape(self._chain)[1]
         t = np.zeros(n)
@@ -452,7 +450,7 @@ class sampler(object):
         try : 
             n_samples = int(n_samples)
         except :
-            print("Error: Number of samples has to be an int.")
+            raise TypeError("number of samples has to be an integer")
             exit()
 
         # fetch info

@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os 
@@ -32,10 +31,7 @@ else:
         return r
 
 def readme():
-    return(read("README.rst")+"\n\n"+
-            "Change Log\n"+
-            "----------\n\n"+
-            read("HISTORY.rst"))
+    return(read("README.rst"))
 
 class CleanCommand(Command):
     user_options = []
@@ -56,16 +52,16 @@ setup(
 	version=version,
 	description='Rock n Rolling awesome affine-invariant MCMC Sampler',
 	long_description=readme(),
-	url='http://github.com/mugurbil/gnm',
+	url='http://MonteCarloSampler.com',
 	author='Mehmet Ugurbil',
 	author_email='mu388@nyu.edu',
 	license='MIT',
 	packages=['gnm'],
-    package_data={'': ['LICENSE', 'AUTHORS.rst']},
+    package_data={'': ['LICENSE', 'AUTHORS.rst', 'HISTORY.rst']},
     include_package_data=True,
 	install_requires=["numpy"],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
