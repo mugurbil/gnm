@@ -25,7 +25,7 @@ Goodman_
 Copyright
 ---------
 
-Copyright 2016 `Mehmet Ugurbil`_ and contributors.
+Copyright 2017 `Mehmet Ugurbil`_ and contributors.
 
 .. _Mehmet Ugurbil: http://montecarlosampler.com/memo
 
