@@ -2,6 +2,9 @@
 
 **A fast, strictly affine-invariant Markov chain Monte Carlo (MCMC) sampler for nonlinear inverse problems and stiff Bayesian posteriors.**
 
+[![PyPI version](https://img.shields.io/pypi/v/gnm.svg)](https://pypi.org/project/gnm/)
+[![CI](https://github.com/mugurbil/gnm/actions/workflows/ci.yml/badge.svg)](https://github.com/mugurbil/gnm/actions/workflows/ci.yml)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mugurbil/gnm/blob/master/examples/gnm_tutorial.ipynb)
 [![Paper](https://img.shields.io/badge/arXiv-2001.03530-b31b1b.svg)](https://arxiv.org/abs/2001.03530)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.rst)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)

@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "gnm: Dynamic Gauss-Newton Metropolis MCMC Sampler"
+message: "If you use this software, please cite the article below."
+type: software
+version: "1.1.0"
+date-released: "2026-10-20"
+license: MIT
+repository-code: "https://github.com/mugurbil/gnm"
+url: "https://pypi.org/project/gnm/"
+keywords:
+  - mcmc
+  - bayesian-inference
+  - gauss-newton
+  - metropolis-hastings
+  - affine-invariant
+  - inverse-problems
+  - nonlinear-least-squares
+authors:
+  - family-names: Ugurbil
+    given-names: Mehmet
+    email: mugurbil@gmail.com
+  - family-names: Goodman
+    given-names: Jonathan
+preferred-citation:
+  type: article
+  title: "Dynamic Gauss-Newton Metropolis Algorithm"
+  authors:
+    - family-names: Ugurbil
+      given-names: Mehmet
+    - family-names: Goodman
+      given-names: Jonathan
+  year: 2020
+  journal: "arXiv preprint arXiv:2001.03530"
+  url: "https://arxiv.org/abs/2001.03530"
