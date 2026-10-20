@@ -45,10 +45,11 @@ setup(
     packages=['gnm'],
     package_data={'': ['LICENSE.rst', 'AUTHORS.rst', 'HISTORY.rst']},
     include_package_data=True,
-    install_requires=["numpy"],
+    install_requires=["numpy>=1.20"],
     extras_require={
-        "scipy": ["scipy"],
-        "dev": ["pytest", "scipy", "matplotlib"],
+        "scipy": ["scipy>=1.7"],
+        "fast": ["numba>=0.57"],
+        "dev": ["pytest>=7.0", "scipy>=1.7", "matplotlib>=3.5", "numba>=0.57"],
     },
     python_requires=">=3.8",
     classifiers=[

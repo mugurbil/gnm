@@ -32,13 +32,15 @@ Standard MCMC algorithms struggle when the posterior landscape has strong parame
 ## Installation
 
 ```bash
-# Standard installation (with Numba JIT acceleration and SciPy utilities)
-pip install -e ".[fast,scipy]"
+# Install from PyPI (with Numba JIT acceleration and SciPy utilities)
+pip install "gnm[fast,scipy]"
 
 # Minimal installation (pure NumPy fallback)
-pip install -e .
+pip install gnm
 
-# Development & benchmarking suite
+# Or install from source for development & benchmarking
+git clone https://github.com/mugurbil/gnm.git
+cd gnm
 pip install -e ".[dev]"
 ```
 
@@ -138,7 +140,7 @@ We benchmarked `gnm` (Static and Dynamic) against four standard MCMC baselines u
 
 ### 1. Exact Posterior Recovery & Affine-Invariance Stress Test ($\kappa = 1$ to $10^{12}$)
 
-![Verification and Affine Invariance](benchmarks/figures/fig1_verification_and_invariance.png)
+![Verification and Affine Invariance](https://raw.githubusercontent.com/mugurbil/gnm/master/benchmarks/figures/fig1_verification_and_invariance.png)
 
 - **Panel (A) — 1D Bimodal Double-Well ($f(x) = x^2 - 2$)**: Both `gnm` Static and Dynamic recover the exact bimodal posterior within Monte Carlo error bars (Total Variation distance $\text{TV} = 0.016$, exact $\mathbb{E}[x^2] = 1.246$ vs. `gnm` $1.251$) despite $J(0) = 0$ at the barrier between modes.
 - **Panel (B) — Back-Off Ablation on Stiff Rosenbrock ($b = 100$)**: Dynamic cubic-Hermite back-off increases acceptance from `17.2%` ($k_{\max}=0$) to **`43.7%`** ($k_{\max}=3$) and increases total ESS by **55%**.
@@ -155,7 +157,7 @@ We benchmarked `gnm` (Static and Dynamic) against four standard MCMC baselines u
 
 ### 2. Statistical Efficiency on Ill-Posed Inverse Problems & High-Dimensional Targets
 
-![SOTA Statistical Efficiency Comparison](benchmarks/figures/fig2_sota_comparison.png)
+![SOTA Statistical Efficiency Comparison](https://raw.githubusercontent.com/mugurbil/gnm/master/benchmarks/figures/fig2_sota_comparison.png)
 
 - **4D Ill-Posed Multi-Exponential Time Series ($y(t) = w_1 e^{-\lambda_1 t} + w_2 e^{-\lambda_2 t}$)**: Multi-exponential fitting is notoriously ill-conditioned due to strong collinearity between $(w_1, \lambda_1)$ and $(w_2, \lambda_2)$. `gnm` (Dynamic) achieves **19.26 ESS per 1,000 evaluations** ($\tau_{\text{int}} = 22.6$)—**2.2x more sample-efficient than `emcee`** (`8.87`), **15x better than RWM** (`1.26`), **32x better than HMC** (`0.59`), and **48x better than MALA** (`0.40`).
 - **16D Anisotropic Coupled Rosenbrock ($\kappa = 10^8$)**: With `sampler.tune()`, `gnm` achieves the **lowest Posterior Mean RMSE (`0.37`) and lowest Posterior Std RMSE (`0.33`)** of all methods tested, outperforming both `emcee` (`0.51` / `0.89`) and HMC (`0.71` / `1.90`).
@@ -164,9 +166,9 @@ We benchmarked `gnm` (Static and Dynamic) against four standard MCMC baselines u
 
 ### 3. Wall-Clock Running Time & Effective Sample Throughput (`ESS / sec`)
 
-![Wall-Clock Runtime and Throughput Comparison](benchmarks/figures/fig3_runtime_comparison.png)
+![Wall-Clock Runtime and Throughput Comparison](https://raw.githubusercontent.com/mugurbil/gnm/master/benchmarks/figures/fig3_runtime_comparison.png)
 
-With fused `@numba.njit` kernels ([`gnm/_numba_kernels.py`](gnm/_numba_kernels.py)), `gnm` achieves both the **lowest wall-clock time per 20,000 evaluations** and the **highest effective sample throughput (`ESS/sec`)** across all four benchmarks:
+With fused `@numba.njit` kernels ([`gnm/_numba_kernels.py`](https://github.com/mugurbil/gnm/blob/master/gnm/_numba_kernels.py)), `gnm` achieves both the **lowest wall-clock time per 20,000 evaluations** and the **highest effective sample throughput (`ESS/sec`)** across all four benchmarks:
 
 | Benchmark | Sampler | Time / 20k Evals (s) | Cost ($\mu\text{s}$ / Eval) | **Throughput (ESS / sec)** | **Time per 100 ESS (s)** |
 | :--- | :--- | :---: | :---: | :---: | :---: |
@@ -254,5 +256,5 @@ If you use `gnm` in your research, please cite:
 }
 ```
 
-- **Authors**: [Mehmet Ugurbil](http://montecarlosampler.com/memo) and [Jonathan Goodman](http://www.math.nyu.edu/faculty/goodman/)
+- **Authors**: [Mehmet Ugurbil](https://mugurbil.github.io/) and [Jonathan Goodman](http://www.math.nyu.edu/faculty/goodman/)
 - **License**: [MIT License](LICENSE.rst)
