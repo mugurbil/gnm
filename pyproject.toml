@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gnm"
+dynamic = ["version"]
+description = "Rock n Rolling awesome affine-invariant MCMC Sampler (Dynamic Gauss-Newton Metropolis)"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Mehmet Ugurbil", email = "mugurbil@gmail.com"}
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.20",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+
+[project.optional-dependencies]
+scipy = ["scipy>=1.7"]
+fast = ["numba>=0.57"]
+dev = ["pytest>=7.0", "scipy>=1.7", "matplotlib>=3.5", "numba>=0.57"]
+
+[tool.setuptools.dynamic]
+version = {attr = "gnm.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

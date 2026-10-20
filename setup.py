@@ -1,72 +1,63 @@
 # -*- coding: utf-8 -*-
 
-import os 
-import sys
+import os
 import re
+import sys
+from setuptools import Command, setup
 
-try:
-    from setuptools import setup, Command
-    setup
-except ImportError:
-    from distutils.core import setup, Command
-    setup
 
-if sys.argv[-1] == "publish":
-    os.system("python setup.py sdist upload")
-    sys.exit()
+def read(filename):
+    with open(filename, encoding="utf-8") as f:
+        return f.read()
 
-# Handle encoding
-major, minor1, minor2, release, serial = sys.version_info
-if major >= 3:
-    def read(filename):
-        f = open(filename, encoding="utf-8")
-        r = f.read()
-        f.close()
-        return r
-else:
-    def read(filename):
-        f = open(filename)
-        r = f.read()
-        f.close()
-        return r
 
 def readme():
-    return(read("README.rst"))
+    return read("README.md")
+
 
 class CleanCommand(Command):
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
-vre = re.compile("__version__ = \"(.*?)\"")
-m = read(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                    "gnm", "__init__.py"))
+
+vre = re.compile(r'__version__ = "(.*?)"')
+m = read(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gnm", "__init__.py"))
 version = vre.findall(m)[0]
 
 setup(
-	name='gnm',
-	version=version,
-	description='Rock n Rolling awesome affine-invariant MCMC Sampler',
-	long_description=readme(),
-	url='http://MonteCarloSampler.com',
-	author='Mehmet Ugurbil',
-	author_email='mu388@nyu.edu',
-	license='MIT',
-	packages=['gnm'],
-    package_data={'': ['LICENSE', 'AUTHORS.rst', 'HISTORY.rst']},
+    name='gnm',
+    version=version,
+    description='Rock n Rolling awesome affine-invariant MCMC Sampler',
+    long_description=readme(),
+    long_description_content_type='text/markdown',
+    url='https://github.com/mugurbil/gnm',
+    author='Mehmet Ugurbil',
+    author_email='mugurbil@gmail.com',
+    license='MIT',
+    packages=['gnm'],
+    package_data={'': ['LICENSE.rst', 'AUTHORS.rst', 'HISTORY.rst']},
     include_package_data=True,
-	install_requires=["numpy"],
+    install_requires=["numpy"],
+    extras_require={
+        "scipy": ["scipy"],
+        "dev": ["pytest", "scipy", "matplotlib"],
+    },
+    python_requires=">=3.8",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7"
+        "Programming Language :: Python :: 3",
     ],
-    cmdclass={'clean': CleanCommand,}
-    )
+    cmdclass={'clean': CleanCommand},
+)
