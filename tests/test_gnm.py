@@ -223,3 +223,42 @@ def test_r0_auto_and_tune_in_high_dimensions():
     assert jagger.chain.shape == (600, 8)
     assert jagger.accept_rate > 0.30
 
+
+def test_jax_kernel_and_vmap():
+    """Verify XLA-compiled gnm.jax kernel with automatic jax.jacfwd and multi-chain vmap."""
+    jax = pytest.importorskip("jax")
+    jnp = jax.numpy
+    from gnm.jax import sample_jax
+
+    def well_res(x):
+        return jnp.array([(x[0] ** 2 - 2.0) / 1.0])
+
+    chain, acc = sample_jax(
+        well_res,
+        jnp.array([0.5]),
+        4000,
+        key=jax.random.PRNGKey(42),
+        prior_mean=jnp.array([0.0]),
+        prior_precision=jnp.array([[1.0]]),
+        max_steps=2,
+        dynamic=True,
+    )
+    assert chain.shape == (4000, 1)
+    assert 0.5 < acc <= 1.0
+    assert abs(float(jnp.mean(chain[500:, 0] ** 2)) - 1.246) < 0.15
+
+    # Multi-chain parallel vmap on 2D Rosenbrock
+    def rosen_res(x):
+        return jnp.array([1.0 - x[0], 5.0 * (x[1] - x[0] ** 2)])
+
+    chains, acc_vmap = sample_jax(
+        rosen_res,
+        jnp.array([1.0, 1.0]),
+        600,
+        key=jax.random.PRNGKey(7),
+        n_chains=4,
+    )
+    assert chains.shape == (4, 600, 2)
+    assert acc_vmap > 0.2
+
+

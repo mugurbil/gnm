@@ -129,6 +129,31 @@ sampler.sample(20000)
 ### 4. Rank-Deficient & Underdetermined Models ($m < n$)
 When the number of observations $m$ is smaller than the number of parameters $n$ (or at critical points where $J(x) = 0$), $J(x)^T J(x)$ is singular. `gnm` automatically applies adaptive Levenberg-Marquardt regularization (or user-specified baseline damping via `gnm.sampler(..., reg=1e-3)`) so sampling proceeds smoothly even without a prior.
 
+### 5. XLA-Compiled `@jax.jit` Kernel & Multi-Chain GPU/TPU Vectorization (`gnm.jax`)
+If your forward model is written in **JAX**, use [`gnm.jax.sample_jax`](gnm/jax.py) to compile the entire Gauss-Newton proposal, exact forward-mode autodiff Jacobian (`jax.jacfwd`), and delayed-rejection loop into a single XLA `jax.lax.scan` kernel—with built-in `jax.vmap` support for running parallel chains on CPU/GPU/TPU:
+
+```python
+import jax
+import jax.numpy as jnp
+from gnm.jax import sample_jax
+
+# Only the residual f(x) is needed; exact Jacobians are computed via jax.jacfwd!
+def rosenbrock_res(x):
+    return jnp.array([1.0 - x[0], 10.0 * (x[1] - x[0] ** 2)])
+
+# Run 4 parallel chains x 10,000 steps in a single XLA-compiled call
+chains, accept_rate = sample_jax(
+    rosenbrock_res,
+    x0=jnp.array([1.0, 1.0]),
+    n_samples=10000,
+    key=jax.random.PRNGKey(0),
+    max_steps=2,
+    dynamic=True,
+    n_chains=4,
+)  # chains.shape == (4, 10000, 2)
+```
+*(Or pass `jac_fn="tuple"` if your JAX function already returns `(f(x), J(x))`.)*
+
 ---
 
 ## Benchmarks vs. State of the Art

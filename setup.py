@@ -65,6 +65,7 @@ setup(
     extras_require={
         "scipy": ["scipy>=1.7"],
         "fast": ["numba>=0.57"],
+        "jax": ["jax>=0.4.20", "jaxlib>=0.4.20"],
         "dev": ["pytest>=7.0", "scipy>=1.7", "matplotlib>=3.5", "numba>=0.57"],
     },
     python_requires=">=3.8",
