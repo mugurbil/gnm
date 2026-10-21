@@ -225,13 +225,39 @@ With fused `@numba.njit` kernels ([`gnm/_numba_kernels.py`](https://github.com/m
 | | **`gnm` (Static, $k_{\max}=1, r_0=0.7$)** | **0.274** | **13.7** | **220.1** | **0.45** |
 | | **`gnm` (Dynamic, $k_{\max}=1, r_0=0.7$)** | **0.274** | **13.7** | **165.3** | **0.60** |
 
+---
+
+### 4. Application: Bayesian Uncertainty Quantification for LLM Scaling Laws (Chinchilla Frontier Extrapolation)
+
+![Chinchilla LLM Scaling Law Extrapolation](https://raw.githubusercontent.com/mugurbil/gnm/master/benchmarks/figures/fig4_scaling_law_experiment.png)
+
+In [`benchmarks/scaling_law_experiment.py`](benchmarks/scaling_law_experiment.py), we fit the 5-parameter Chinchilla scaling law $L(N, D) = E + A N^{-\alpha} + B D^{-\beta}$ to 36 small/medium runs ($C \le 3.6 \times 10^{20}\text{ FLOPs}$) and extrapolate the compute-optimal model size $N^*(C)$ to frontier scale ($10^{24}\text{–}10^{25}\text{ FLOPs}$):
+- **26x–29x Faster than Multi-Start Bootstrap**: Standard 500-fit parametric bootstrap takes **9.03 s** for 500 independent samples (`55.3 ESS/sec`), whereas warm-started `gnm` takes **0.31 s** (Static, `1,623.2 ESS/sec`, **29.3x faster**) and **0.34 s** (Dynamic, `1,454.8 ESS/sec`, **26.3x faster**).
+- **11x–133x Faster than Standard MCMC**: Beats `emcee` (`3.32 s`), HMC (`19.22 s`), RWM (`39.89 s`), and MALA (`40.90 s`), while capturing the exact nonlinear $(\alpha, A)$ banana ridge that Linearized Laplace $(J^T J)^{-1}$ misses.
+
+---
+
+### 5. Application Suite: Observational Astrophysics (Exoplanet RV, Supernova $w_0 w_a\text{CDM}$ Cosmology & Gravitational Microlensing)
+
+![Astrophysics Benchmark Suite](https://raw.githubusercontent.com/mugurbil/gnm/master/benchmarks/figures/fig5_astrophysics_suite.png)
+
+![Astrophysics Runtime and Efficiency Comparison](https://raw.githubusercontent.com/mugurbil/gnm/master/benchmarks/figures/fig6_astrophysics_runtime_comparison.png)
+
+In [`benchmarks/astrophysics_experiments.py`](benchmarks/astrophysics_experiments.py), we benchmark `gnm` and `gnm.jax` across three canonical observational astrophysics inverse problems where `emcee` is the community standard:
+- **6D Keplerian Exoplanet Radial-Velocity Orbit (`RadVel` / Keck-HIRES style, $\kappa(J^T J) = 2.5 \times 10^2$)**: `gnm` achieves $\tau_{\max} = 1.3$ and **5,586.7 ESS/sec** (`0.09 s` for 500 ESS)—**73x faster than `emcee`** (`76.5 ESS/sec`, `6.53 s`).
+- **4D Type Ia Supernova $w_0 w_a\text{CDM}$ Dark Energy Cosmology (Pantheon+ / JLA Hubble Diagram, $\kappa(J^T J) = 2.0 \times 10^5$)**: `gnm` achieves **115.4 ESS/sec** (`4.33 s` for 500 ESS)—**2.5x faster than `emcee`** (`45.8 ESS/sec`, `10.91 s`) and **30x faster than HMC**, while `gnm.jax` (`@jax.jit`) delivers the lowest raw per-evaluation runtime (`1.72 s` per 20,000 evaluations).
+- **5D Gravitational Microlensing Light Curve (OGLE / Roman PSPL style, $\kappa(J^T J) = 3.2 \times 10^6$)**: Dynamic `gnm` achieves **446.7 ESS/sec** (`1.12 s` for 500 ESS)—**3.4x faster than `emcee`** (`130.4 ESS/sec`, `3.83 s`) and **52x faster than HMC**.
+
 ### Reproducing the Benchmarks
 ```bash
 # Run the full verification & SOTA comparison suite
 python benchmarks/benchmark_sota.py
 
-# Regenerate all benchmark figures in benchmarks/figures/
-python benchmarks/plot_benchmarks.py
+# Run the Chinchilla LLM scaling-law extrapolation benchmark
+python benchmarks/scaling_law_experiment.py
+
+# Run the 3-problem Open-Source Astrophysics benchmark suite
+python benchmarks/astrophysics_experiments.py
 
 # Run the unit test suite
 pytest -v

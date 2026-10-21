@@ -27,6 +27,60 @@ class GNMState(NamedTuple):
     f_sq: jax.Array       # () scalar
 
 
+def _cholesky_unrolled(A: jax.Array) -> jax.Array:
+    """Compile-time unrolled Cholesky for small n <= 12 (avoids LAPACK FFI overhead)."""
+    n = A.shape[0]
+    if n > 12:
+        return jnp.linalg.cholesky(A)
+    cols = []
+    for j in range(n):
+        # Compute column j of L
+        col_j = []
+        for i in range(n):
+            if i < j:
+                col_j.append(jnp.asarray(0.0, dtype=A.dtype))
+            elif i == j:
+                s = A[j, j]
+                for k in range(j):
+                    s = s - cols[k][j] * cols[k][j]
+                col_j.append(jnp.sqrt(jnp.maximum(s, 1e-12)))
+            else:
+                s = A[i, j]
+                for k in range(j):
+                    s = s - cols[k][i] * cols[k][j]
+                col_j.append(s / col_j[j])
+        cols.append(col_j)
+    return jnp.column_stack([jnp.stack(c) for c in cols])
+
+
+def _solve_lower_unrolled(L: jax.Array, b: jax.Array) -> jax.Array:
+    """Compile-time unrolled lower-triangular solve L y = b for n <= 12."""
+    n = L.shape[0]
+    if n > 12:
+        return jax.scipy.linalg.solve_triangular(L, b, lower=True)
+    y = []
+    for i in range(n):
+        s = b[i]
+        for k in range(i):
+            s = s - L[i, k] * y[k]
+        y.append(s / L[i, i])
+    return jnp.stack(y)
+
+
+def _solve_upper_unrolled(U: jax.Array, b: jax.Array) -> jax.Array:
+    """Compile-time unrolled upper-triangular solve U x = b for n <= 12."""
+    n = U.shape[0]
+    if n > 12:
+        return jax.scipy.linalg.solve_triangular(U, b, lower=False)
+    x = [None] * n
+    for i in range(n - 1, -1, -1):
+        s = b[i]
+        for k in range(i + 1, n):
+            s = s - U[i, k] * x[k]
+        x[i] = s / U[i, i]
+    return jnp.stack(x)
+
+
 def _proposal_params_jax(
     x: jax.Array,
     f: jax.Array,
@@ -41,20 +95,12 @@ def _proposal_params_jax(
     n = x.shape[0]
     JJ = J.T @ J
     P = JJ + (H_prior if has_prior else 0.0) + reg * jnp.eye(n, dtype=x.dtype)
-    # Adaptive Levenberg-Marquardt floor to guarantee positive definiteness under JIT
-    eig_floor = 1e-10
-    L = jnp.linalg.cholesky(P)
-    bad_chol = jnp.any(jnp.isnan(L)) | (jnp.min(jnp.diag(L)) <= 1e-8)
-    L = jnp.where(
-        bad_chol,
-        jnp.linalg.cholesky(P + 1e-2 * jnp.eye(n, dtype=x.dtype)),
-        L,
-    )
-    log_det_L = jnp.sum(jnp.log(jnp.abs(jnp.diag(L))))
+    L = _cholesky_unrolled(P)
+    log_det_L = jnp.sum(jnp.log(jnp.diag(L)))
     JTf = J.T @ f
     rhs = (Hm_prior - JTf + JJ @ x) if has_prior else JTf
-    y = jax.scipy.linalg.solve_triangular(L, rhs, lower=True)
-    step = jax.scipy.linalg.solve_triangular(L.T, y, lower=False)
+    y = _solve_lower_unrolled(L, rhs)
+    step = _solve_upper_unrolled(L.T, y)
     mu = step if has_prior else (x - step)
 
     f_sq = jnp.dot(f, f)
@@ -63,14 +109,14 @@ def _proposal_params_jax(
         diff = x - m_prior
         log_p = ln_H - 0.5 * jnp.dot(diff, H_prior @ diff) + log_lik
     else:
-        log_p = log_lik + 0.0 * eig_floor
+        log_p = log_lik
     return GNMState(x=x, f=f, J=J, L=L, mu=mu, log_det_L=log_det_L, log_p=log_p, f_sq=f_sq)
 
 
 def _propose_jax(state: GNMState, t: jax.Array, z_std: jax.Array) -> jax.Array:
     m = (1.0 - t) * state.x + t * state.mu
     scale = jnp.sqrt(2.0 * t - t * t)
-    delta = jax.scipy.linalg.solve_triangular(state.L.T, scale * z_std, lower=False)
+    delta = _solve_upper_unrolled(state.L.T, scale * z_std)
     return m + delta
 
 
@@ -175,29 +221,38 @@ def _run_single_chain_jit(
 
         # Delayed-rejection back-off stages k = 1 .. max_steps
         for k in range(1, max_steps + 1):
-            r_k = _backoff_step_jax(X, Z_stages[-1], r_stages[-1], dynamic, step_size)
-            r_stages.append(r_k)
             zk_std = jax.random.normal(z_keys[2 * k], shape=(n,), dtype=jnp.float64)
             uk = jax.random.uniform(z_keys[2 * k + 1], dtype=jnp.float64)
+            prev_Z = Z_stages[-1]
+            prev_r = r_stages[-1]
 
-            def _do_stage_k(_):
+            def _skip_stage_k(_):
+                return curr_X, accepted, prev_Z, prev_r, log_P_zx
+
+            def _run_stage_k(_):
+                r_k = _backoff_step_jax(X, prev_Z, prev_r, dynamic, step_size)
                 zk = _propose_jax(X, r_k, zk_std)
                 f_zk, J_zk = eval_both(zk)
-                return prop_fn(zk, f_zk, J_zk)
+                Zk = prop_fn(zk, f_zk, J_zk)
+                Z_st_k = Z_stages + [Zk]
+                r_st_k = r_stages + [r_k]
+                log_P_zx_k = log_P_zx + _log_K_jax(Zk, X, r_k)
+                log_N_k = _log_P_jax(X, Zk, k, Z_st_k, r_st_k)
+                Ak = jnp.where(
+                    jnp.isfinite(log_N_k),
+                    jnp.clip(jnp.exp(jnp.minimum(0.0, log_N_k - log_P_zx_k)), 0.0, 1.0),
+                    0.0,
+                )
+                acc_k = uk <= Ak
+                next_X = jax.tree_util.tree_map(lambda a, b: jnp.where(acc_k, a, b), Zk, curr_X)
+                next_log_P = log_P_zx_k + jnp.log1p(-jnp.minimum(Ak, 1.0 - 1e-16))
+                return next_X, accepted | acc_k, Zk, r_k, next_log_P
 
-            Zk = jax.lax.cond(accepted, lambda _: Z_stages[-1], _do_stage_k, operand=None)
-            Z_stages.append(Zk)
-            log_P_zx_k = log_P_zx + _log_K_jax(Zk, X, r_k)
-            log_N_k = _log_P_jax(X, Zk, k, Z_stages, r_stages)
-            Ak = jnp.where(
-                (~accepted) & jnp.isfinite(log_N_k),
-                jnp.clip(jnp.exp(jnp.minimum(0.0, log_N_k - log_P_zx_k)), 0.0, 1.0),
-                0.0,
+            curr_X, accepted, Zk_out, rk_out, log_P_zx = jax.lax.cond(
+                accepted, _skip_stage_k, _run_stage_k, operand=None
             )
-            acc_k = (~accepted) & (uk <= Ak)
-            curr_X = jax.tree_util.tree_map(lambda a, b: jnp.where(acc_k, a, b), Zk, curr_X)
-            accepted = accepted | acc_k
-            log_P_zx = log_P_zx_k + jnp.log1p(-jnp.minimum(Ak, 1.0 - 1e-16))
+            Z_stages.append(Zk_out)
+            r_stages.append(rk_out)
 
         return (curr_X, n_acc + accepted.astype(jnp.int32)), curr_X.x
 
